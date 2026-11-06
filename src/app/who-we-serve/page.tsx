@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Section } from '@/components/layout/Section';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { PageHero } from '@/components/sections/PageHero';
+import { BreadcrumbData } from '@/components/seo/BreadcrumbData';
 import { CtaBand } from '@/components/sections/CtaBand';
 import { ButtonLink } from '@/components/ui/Button';
 import { Diamond } from '@/components/ui/Motifs';
@@ -47,6 +48,7 @@ const notForYou = [
 export default function WhoWeServePage() {
   return (
     <>
+      <BreadcrumbData trail={[{ name: 'Who We Serve', path: '/who-we-serve' }]} />
       <PageHero
         eyebrow="Who we serve"
         title="Residential investors, first"

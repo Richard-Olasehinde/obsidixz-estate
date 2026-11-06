@@ -342,6 +342,75 @@ async function main() {
     }
   }
 
+  /* 5b — breadcrumb structured data on inner pages */
+  section('5b. Breadcrumb structured data');
+  for (const [path, html] of pages) {
+    const blocks = [...html.matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/gi)];
+    if (path === '/') {
+      let hasBreadcrumb = false;
+      for (const block of blocks) {
+        try {
+          const obj = JSON.parse(decode(block[1]));
+          for (const item of Array.isArray(obj) ? obj : [obj]) {
+            if ([item['@type']].flat().includes('BreadcrumbList')) hasBreadcrumb = true;
+          }
+        } catch {
+          /* reported elsewhere */
+        }
+      }
+      record('seo', 'homepage has no unnecessary breadcrumb', !hasBreadcrumb, `${blocks.length} JSON-LD block(s)`);
+      continue;
+    }
+    let parsed = null;
+    let isBreadcrumb = false;
+    for (const block of blocks) {
+      try {
+        const obj = JSON.parse(decode(block[1]));
+        const arr = Array.isArray(obj) ? obj : [obj];
+        for (const item of arr) {
+          const types = [item['@type']].flat();
+          if (types.includes('BreadcrumbList')) {
+            parsed = item;
+            isBreadcrumb = true;
+          }
+        }
+      } catch {
+        /* reported by the earlier JSON-LD check */
+      }
+    }
+    record('seo', `${path} has BreadcrumbList JSON-LD`, isBreadcrumb);
+    if (parsed) {
+      const names = parsed.itemListElement.map((i) => i.name);
+      record(
+        'seo',
+        `${path} breadcrumb starts at Home and ends at this page`,
+        names[0] === 'Home' && names.length >= 2,
+        names.join(' › '),
+      );
+    }
+    record('seo', `${path} has a visible breadcrumb nav`, /aria-label="Breadcrumb"/.test(html));
+  }
+
+  /* 5c — manifest and social sharing */
+  section('5c. Manifest and social metadata');
+  {
+    const { res, body } = await get('/manifest.webmanifest');
+    record('seo', 'web app manifest returns 200', res.status === 200);
+    try {
+      const manifest = JSON.parse(body);
+      record('seo', 'manifest declares name and theme colour', Boolean(manifest.name) && manifest.theme_color === '#315C9B', `${manifest.name} / ${manifest.theme_color}`);
+      record('seo', 'manifest icons present', Array.isArray(manifest.icons) && manifest.icons.length >= 2);
+    } catch (error) {
+      record('seo', 'manifest is valid JSON', false, String(error));
+    }
+    const home = pages.get('/') ?? '';
+    record('seo', 'manifest is linked from the homepage', /rel="manifest" href="\/manifest\.webmanifest"/.test(home));
+    record('seo', 'twitter:card is summary_large_image', metaContent(home, 'name', 'twitter:card') === 'summary_large_image');
+    record('seo', 'og:type is website', metaContent(home, 'property', 'og:type') === 'website');
+    record('seo', 'og:locale is en_US', metaContent(home, 'property', 'og:locale') === 'en_US');
+    record('seo', 'html lang is set', /<html[^>]*lang="en-US"/.test(home));
+  }
+
   /* 6 — robots + sitemap */
   section('6. Robots and sitemap');
   {

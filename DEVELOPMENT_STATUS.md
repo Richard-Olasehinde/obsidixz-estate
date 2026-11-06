@@ -1,12 +1,12 @@
 # DEVELOPMENT STATUS
 
-Last updated: **2026-11-06** — after Stage 5.
+Last updated: **2026-11-06** — after Stage 6.
 
 ---
 
 ## Current stage
 
-**Stage 5 — Responsive implementation.** Complete and committed. Work then proceeds to Stage 6.
+**Stage 6 — SEO and metadata.** Complete and committed. Work then proceeds to Stage 7.
 
 ## Stage register
 
@@ -16,7 +16,8 @@ Last updated: **2026-11-06** — after Stage 5.
 | 2 | Homepage | ✅ Complete | `7798dc6` |
 | 3 | Remaining core pages | ✅ Complete | `6455ffd` |
 | 4 | Navigation and functionality | ✅ Complete | `42e9572` |
-| 5 | Responsive implementation | ✅ Complete | `style: complete responsive website implementation` |
+| 5 | Responsive implementation | ✅ Complete | `783794e` |
+| 6 | SEO and metadata | ✅ Complete | `feat: implement SEO metadata and site discovery configuration` |
 | 6 | SEO and metadata | ⬜ Not started | — |
 | 7 | Testing and corrections | ⬜ Not started | — |
 | 8 | Deployment preparation | ⬜ Not started | — |
@@ -224,6 +225,55 @@ either single-column or measured to fit, and no text uses `whitespace-nowrap`.
 geometry; it cannot see image cropping, colour rendering or scrollbar behaviour. The founder
 should confirm the widths above in a browser — this remains listed as an open verification item
 in Stage 7.
+
+---
+
+## Stage 6 — SEO and metadata
+
+### Implemented
+
+| Requirement | Implementation | Verified |
+| --- | --- | --- |
+| Page titles | `buildMetadata()` per page; every title unique and descriptive | ✅ 8/8 routes |
+| Meta descriptions | Per page, 50–180 characters, unique | ✅ 8/8 routes (84–176 chars) |
+| Heading hierarchy | One `<h1>` per page, no skipped levels | ✅ 8/8 routes |
+| Descriptive URLs | `/about`, `/services`, `/how-it-works`, `/who-we-serve`, `/contact`, `/privacy-policy`, `/terms-of-service` | ✅ |
+| Image alt text | Every `<img>` has descriptive alt; decorative SVG is `aria-hidden` | ✅ |
+| Open Graph | `og:title`, `og:description`, `og:url`, `og:site_name`, `og:locale`, `og:type`, `og:image` (1200×630 with `og:image:alt`, `:width`, `:height`) | ✅ |
+| Twitter card | `summary_large_image` with title, description, image | ✅ |
+| Canonical URLs | Absolute, from `NEXT_PUBLIC_SITE_URL`, never from the request host | ✅ 8/8, matches sitemap exactly |
+| Sitemap | `app/sitemap.ts`, generated from `src/lib/routes.ts` | ✅ 8 entries, no localhost |
+| Robots | `app/robots.ts`, allows `/`, disallows `/api/`, declares sitemap and host | ✅ |
+| Favicon | `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png` | ✅ 200 |
+| Web app manifest | `app/manifest.ts` with name, theme colour and icons | ✅ 200, linked from page |
+| Structured data | `Organization` + `WebSite` on the homepage; `BreadcrumbList` on every inner page | ✅ All parse |
+| Visible breadcrumbs | Present on every inner page via `PageHero`, matching the JSON-LD | ✅ |
+| `lang` attribute | `<html lang="en-US">` | ✅ |
+
+### Deliberately absent
+
+- **No `LocalBusiness` or `PostalAddress`.** The business has no US office and no registered
+  address has been supplied. Publishing either would be fabrication.
+- **No `telephone`.** No number has been supplied.
+- **No `AggregateRating` or `Review`.** No reviews exist.
+- **No location landing pages.** Only markets the business has actually researched would justify
+  them, and none have been agreed.
+- **No `sameAs` social links.** No accounts have been supplied.
+- **No keyword stuffing.** Copy uses natural phrasing around real-estate research, property lead
+  research, residential property prospects, US real-estate investors and property acquisition
+  research, once each where it reads naturally.
+
+### Tested
+
+| Test | Result |
+| --- | --- |
+| Canonical vs sitemap consistency, all eight routes | ✅ Exact match, no trailing-slash drift |
+| `robots.txt` content | ✅ `Allow: /`, `Disallow: /api/`, sitemap and host declared |
+| `sitemap.xml` entry count | ✅ 8 of 8 required routes |
+| `manifest.webmanifest` | ✅ 200, valid JSON, theme colour `#315C9B`, 3 icons |
+| JSON-LD parse on every page | ✅ Organization + WebSite + BreadcrumbList as expected |
+| Homepage carries no breadcrumb (correct — it is the root) | ✅ |
+| Smoke suite | ✅ 135/135 checks |
 
 ---
 

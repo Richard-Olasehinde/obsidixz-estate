@@ -3,6 +3,7 @@ import { Container } from '@/components/layout/Container';
 import { PageHero } from '@/components/sections/PageHero';
 import { LEGAL_LAST_UPDATED, type LegalBlock, type LegalSection } from '@/lib/legal';
 import { ButtonLink } from '@/components/ui/Button';
+import { BreadcrumbData } from '@/components/seo/BreadcrumbData';
 
 /**
  * Renders a legal page: hero, review notice, contents, and sections.
@@ -94,6 +95,7 @@ export function LegalPageLayout({
   title,
   intro,
   sections,
+  basePath,
   crossLink,
 }: LegalPageProps) {
   const pendingCount = sections.reduce(
@@ -103,6 +105,7 @@ export function LegalPageLayout({
 
   return (
     <>
+      <BreadcrumbData trail={[{ name: title, path: basePath }]} />
       <PageHero
         eyebrow={eyebrow}
         title={title}

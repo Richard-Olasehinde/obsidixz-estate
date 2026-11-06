@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Section } from '@/components/layout/Section';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { PageHero } from '@/components/sections/PageHero';
+import { BreadcrumbData } from '@/components/seo/BreadcrumbData';
 import { CtaBand } from '@/components/sections/CtaBand';
 import { ButtonLink } from '@/components/ui/Button';
 import { FieldList } from '@/components/ui/FieldList';
@@ -35,6 +36,7 @@ const formatOptions = [
 export default function ServicesPage() {
   return (
     <>
+      <BreadcrumbData trail={[{ name: 'Services', path: '/services' }]} />
       <PageHero
         eyebrow="Services"
         title="Property Lead Research"

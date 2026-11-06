@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Section } from '@/components/layout/Section';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { PageHero } from '@/components/sections/PageHero';
+import { BreadcrumbData } from '@/components/seo/BreadcrumbData';
 import { CtaBand } from '@/components/sections/CtaBand';
 import { ButtonLink } from '@/components/ui/Button';
 import { Diamond, DivisionGrid } from '@/components/ui/Motifs';
@@ -27,6 +28,7 @@ const facts = [
 export default function AboutPage() {
   return (
     <>
+      <BreadcrumbData trail={[{ name: 'About Us', path: '/about' }]} />
       <PageHero
         eyebrow="About us"
         title="An emerging research business, described accurately"

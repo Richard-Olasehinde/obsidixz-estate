@@ -4,6 +4,7 @@ import { Section } from '@/components/layout/Section';
 import { Container } from '@/components/layout/Container';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { PageHero } from '@/components/sections/PageHero';
+import { BreadcrumbData } from '@/components/seo/BreadcrumbData';
 import { EnquiryForm } from '@/components/forms/EnquiryForm';
 import { Diamond } from '@/components/ui/Motifs';
 import { buildMetadata } from '@/lib/metadata';
@@ -54,6 +55,7 @@ function FormStatusNotice() {
 export default function ContactPage() {
   return (
     <>
+      <BreadcrumbData trail={[{ name: 'Contact', path: '/contact' }]} />
       <PageHero
         eyebrow="Contact"
         title="Discuss your research requirements"

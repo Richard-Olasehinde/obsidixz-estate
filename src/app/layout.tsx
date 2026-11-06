@@ -19,10 +19,17 @@ export const metadata: Metadata = {
   },
   description: siteConfig.description,
   applicationName: siteConfig.name,
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    title: siteConfig.name,
+    statusBarStyle: 'default',
+  },
   authors: [{ name: siteConfig.name }],
   creator: siteConfig.name,
   publisher: siteConfig.name,
   formatDetection: { telephone: false, address: false, email: false },
+  category: 'business',
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },

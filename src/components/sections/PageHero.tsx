@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { Container } from '@/components/layout/Container';
 import { Eyebrow } from '@/components/ui/Eyebrow';
@@ -25,6 +26,21 @@ export function PageHero({ eyebrow, title, intro, children, meta }: PageHeroProp
       </div>
       <Container>
         <div className="relative max-w-3xl pb-14 pt-16 sm:pb-16 sm:pt-20 lg:pb-20 lg:pt-24">
+          <nav aria-label="Breadcrumb" className="mb-6">
+            <ol className="flex flex-wrap items-center gap-2 font-sans text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-[#7d8a99]">
+              <li>
+                <Link href="/" className="transition-colors hover:text-white">
+                  Home
+                </Link>
+              </li>
+              <li aria-hidden="true" className="text-[#4a5563]">
+                /
+              </li>
+              <li aria-current="page" className="text-[#b6c1cd]">
+                {eyebrow}
+              </li>
+            </ol>
+          </nav>
           <Eyebrow tone="inverse">{eyebrow}</Eyebrow>
           <h1 className="mt-5 text-h2 font-bold text-white">{title}</h1>
           <p className="mt-6 max-w-2xl text-lead text-[#aab6c4]">{intro}</p>

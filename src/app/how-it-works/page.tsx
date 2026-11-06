@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Section } from '@/components/layout/Section';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { PageHero } from '@/components/sections/PageHero';
+import { BreadcrumbData } from '@/components/seo/BreadcrumbData';
 import { CtaBand } from '@/components/sections/CtaBand';
 import { ButtonLink } from '@/components/ui/Button';
 import { ProcessSteps } from '@/components/ui/ProcessSteps';
@@ -42,6 +43,7 @@ const honestyNotes = [
 export default function HowItWorksPage() {
   return (
     <>
+      <BreadcrumbData trail={[{ name: 'How It Works', path: '/how-it-works' }]} />
       <PageHero
         eyebrow="How it works"
         title="Five steps, agreed up front"
