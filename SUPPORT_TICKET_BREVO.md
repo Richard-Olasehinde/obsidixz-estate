@@ -61,7 +61,26 @@ Richard Olasehinde
 
 ---
 
-## Before you send
+## Correction: the API test in the message body cannot be run yet
+
+Brevo's own "Check your phone" dialog states that phone verification is what unlocks:
+
+- Always get your account back
+- Send campaigns
+- **Create an API key**
+
+So **no API key can exist until phone verification passes**. The `HTTP [status code]` line in the
+message above must therefore be **deleted before sending** — there is no request to report, and
+claiming one would be false. The earlier "test the API first" step was based on the assumption that a
+key had already been generated during the flow; the modal proves it had not.
+
+## The unresolvable detail in the ticket text
+
+The draft says *"the API is rejecting my requests"*. That is also not true and must be removed. The
+accurate statement is: **an API key cannot be created, because the key-creation step is gated behind
+phone verification.** The blocker is upstream of the API entirely.
+
+## Before sending
 
 1. Replace all three `[bracketed]` fields.
 2. Do **not** paste your API key. Support has no reason to ask for it, and if they do, generate a new

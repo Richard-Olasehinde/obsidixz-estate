@@ -660,3 +660,18 @@ records and authenticated it. The blocker is account validation, not the provide
 **If the ticket fails**, the fallback remains Zoho ZeptoMail, with the caveat already recorded that it
 also requires manual account review — so it may substitute one waiting room for another rather than
 removing it.
+
+### D58. No API key exists, and none can until phone verification passes
+
+**Established:** Brevo's "Check your phone" dialog enumerates what phone verification unlocks, and
+**"Create an API key"** is on that list. Key creation is gated behind verification, not merely warned
+about.
+
+**Consequence:** the proposed diagnostic — send a test request to the transactional API and read the
+HTTP status — **cannot be performed**. There is no key to authenticate with. Any report of an API
+status code in this situation would be fabricated, so the ticket must not include one.
+
+**Also visible in the same dialog, and previously missed:** a **"Resend code by phone call"** option.
+This is a second delivery channel offered by Brevo itself, and it should be attempted before any
+change of phone number, before borrowing a foreign number, and before the account is treated as
+blocked.
