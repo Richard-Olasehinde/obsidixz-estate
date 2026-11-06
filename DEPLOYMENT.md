@@ -149,6 +149,45 @@ so a destination can be mapped without reading the source.
 
 ---
 
+## 5a. Current DNS state of `obsidixz.pp.ua` (measured 2026-11-06)
+
+Recorded because these are **live, working** records that must not be disturbed. Measured by
+direct DNS query, not assumed.
+
+| Name | Type | Value | What it serves |
+| --- | --- | --- | --- |
+| `obsidixz.pp.ua` | `A` | `185.199.108.153`, `.109.153`, `.110.153`, `.111.153` | **GitHub Pages** site at the apex |
+| `www.obsidixz.pp.ua` | `CNAME` | `richard-olasehinde.github.io` | Same GitHub Pages site |
+| `obsidixz.pp.ua` | `MX` | `mx.zoho.com` (10), `mx2.zoho.com` (20), `mx3.zoho.com` (50) | **Live Zoho Mail** at the apex |
+| `obsidixz.pp.ua` | `TXT` | `v=spf1 include:zohomail.com ~all` | SPF for Zoho |
+| `obsidixz.pp.ua` | `TXT` | `zoho-verification=…`, `google-site-verification=…` | Domain ownership proofs |
+| `_dmarc.obsidixz.pp.ua` | `TXT` | `v=DMARC1; p=none; rua=mailto:admin@obsidixz.pp.ua` | **DMARC already published** |
+| `realestate.obsidixz.pp.ua` | — | **Does not exist** (`NXDOMAIN` on A, AAAA, CNAME, TXT, MX) | Nothing yet |
+
+**Authoritative nameservers:** `ns10.uadns.com`, `ns11.uadns.com`, `ns12.uadns.com` — the zone is
+managed at **uadns.com**, not Cloudflare. The Cloudflare grey-cloud advice therefore does not
+apply here.
+
+### Consequences for this project
+
+1. **Never add Resend's MX to the apex.** It would take over inbound mail for
+   `obsidixz.pp.ua` and break Zoho. Resend's MX belongs on `send.realestate` only.
+2. **Never add `include:amazonses.com` to the apex SPF.** It is unnecessary — SPF is published on
+   `send.realestate` and relaxed alignment covers it.
+3. **Do not modify the existing `_dmarc.obsidixz.pp.ua`.** It is in use. A separate
+   `_dmarc.realestate.obsidixz.pp.ua` can be added without touching it.
+4. **`realestate` has no record at all**, so it resolves to nothing. This blocks adding it as a
+   Resend domain until something exists there.
+
+### GitHub Pages cannot host this site
+
+The apex is served by GitHub Pages, which is static. This application needs a Node runtime for
+`/api/enquiry`. A static export would delete server-side validation, the rate limiter and
+secret-safe delivery (see §3 Option C and decision D44). **`realestate.obsidixz.pp.ua` must point
+at a Node host** — Vercel being the least configuration.
+
+---
+
 ## 6. Domain configuration
 
 Target: **`realestate.obsidixz.pp.ua`** — a subdomain of the parent `obsidixz.pp.ua` domain.
