@@ -10,7 +10,7 @@
   --color-royal-deep: #274a7d;
   --color-royal-tint: #eef3fa;
   --color-gold: #b47745;
-  --color-gold-deep: #8a5530; /* AA on white (5.6:1) and on gold-tint (5.0:1) */
+  --color-gold-deep: #8a5530; /* AA text: 6.13:1 on white, 5.48:1 on gold-tint, 5.29:1 on mist */
   --color-gold-tint: #f8f1ea;
   --color-ink: #111111;
   --color-charcoal: #292d32;
