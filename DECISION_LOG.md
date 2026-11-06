@@ -602,3 +602,33 @@ over, so it is documented in three places rather than assumed.
 payload shape. Refusing to test it would mean shipping a delivery path that had never run. The
 production guard means the seam cannot redirect a live enquiry, and it is documented as a test
 seam rather than an integration point so nobody mistakes it for one.
+
+### D55. The confirmed trading address is recorded in code, not yet rendered
+
+**Decision:** The founder supplied the real trading address on 2026-11-06 —
+No 4, Adeoye Street, Ibadan 200109, Nigeria — with the stated position that transparency is a core
+business value, and authorised its use on the website if needed. It is recorded in
+`src/lib/site.ts` as `businessAddress`, and `PENDING_BUSINESS_DETAILS.registeredAddress` is marked
+resolved.
+
+**Why record it:** it is a confirmed fact, and it was already needed for the Brevo signup. Leaving
+it in a chat transcript rather than the codebase would have lost it.
+
+### D56. It is not published on the site yet, and that is deliberate
+
+**Decision:** `businessAddress` is exported but **not rendered on any page**. The privacy policy
+and Terms do not display it, and nothing in the UI changed.
+
+**Why:** this is a residential street address. A signup form requires a billing address; a public
+website does not. Publishing it would place a home address in every search index permanently, and
+it is the kind of decision that should be made once, deliberately, with the trade-off stated —
+not made implicitly because a provider's form asked for it.
+
+**What is not being done:** nothing is being concealed. The site already states plainly that the
+business `operates remotely from Nigeria and is not aligned to US business hours`, and the address
+is supplied to the email provider and available on request. The privacy policy's outstanding
+address item is about the **legal entity**, which is still undecided (LR-01) — a street address is
+not a substitute for it.
+
+**If the founder wants it published**, the change is one line in the footer or the legal pages.
+That is a separate, explicit decision. Publishing is not the default.

@@ -60,13 +60,36 @@ export const hasPublicEmail = businessContact.email.length > 0;
 export const hasPublicPhone = businessContact.phone.length > 0;
 
 /**
+ * Business address — CONFIRMED BY THE FOUNDER 2026-11-06.
+ *
+ * Supplied directly by the founder as the real trading address, on the stated
+ * principle that transparency is a core value of the business. It is recorded
+ * here as fact, not assumed, inferred or approximated.
+ *
+ * It is deliberately NOT yet rendered on any public page. Publishing a
+ * residential address on a public website is a decision with consequences that
+ * a form field does not carry — see DECISION_LOG.md D56. Nothing is hidden: the
+ * website states plainly that the business operates remotely, and the address is
+ * available on request and to the email provider.
+ */
+export const businessAddress = {
+  street: 'No 4, Adeoye Street',
+  city: 'Ibadan',
+  postalCode: '200109',
+  country: 'Nigeria',
+  /** Single-line form, for legal pages or email footers if ever published. */
+  formatted: 'No 4, Adeoye Street, Ibadan 200109, Nigeria',
+} as const;
+
+/**
  * Details that must be supplied before launch. Kept as a single readable list
  * so the founder can work through it, and reused by the legal pages to render
  * explicitly marked placeholders instead of invented facts.
  */
 export const PENDING_BUSINESS_DETAILS = {
   legalEntityName: null,
-  registeredAddress: null,
+  // Resolved 2026-11-06: founder supplied the real trading address.
+  registeredAddress: 'supplied',
   companyRegistrationNumber: null,
   governingLaw: null,
   privacyContactEmail: null,
