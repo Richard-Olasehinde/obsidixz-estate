@@ -63,7 +63,7 @@ export function FieldWrapper({
           {required ? <span className="sr-only"> (required)</span> : null}
         </label>
         {optional ? (
-          <span className="font-sans text-[0.72rem] uppercase tracking-[0.1em] text-charcoal/45">
+          <span className="font-sans text-[0.72rem] uppercase tracking-[0.1em] text-charcoal/65">
             Optional
           </span>
         ) : null}

@@ -8,7 +8,7 @@ type EyebrowProps = {
 
 const tones = {
   royal: 'text-royal',
-  gold: 'text-gold',
+  gold: 'text-gold-deep',
   inverse: 'text-[#c9d6ea]',
 };
 

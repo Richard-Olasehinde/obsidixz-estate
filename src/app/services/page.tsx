@@ -65,7 +65,7 @@ export default function ServicesPage() {
               <div key={item.title} className="bg-white p-6">
                 <span
                   aria-hidden="true"
-                  className="font-display text-[0.72rem] font-bold tracking-[0.16em] text-gold"
+                  className="font-display text-[0.72rem] font-bold tracking-[0.16em] text-gold-deep"
                 >
                   {String(index + 1).padStart(2, '0')}
                 </span>

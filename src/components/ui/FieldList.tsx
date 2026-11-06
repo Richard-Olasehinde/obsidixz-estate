@@ -35,7 +35,7 @@ export function FieldList({ items, tone = 'light', columns = 2 }: FieldListProps
           <Diamond
             className={[
               'mt-[0.45rem] h-2.5 w-2.5 shrink-0',
-              isDark ? 'text-gold' : 'text-gold',
+              isDark ? 'text-gold' : 'text-gold-deep',
             ].join(' ')}
           />
           <div className="min-w-0">

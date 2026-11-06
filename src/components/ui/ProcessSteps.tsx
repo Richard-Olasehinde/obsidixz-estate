@@ -82,7 +82,7 @@ export function ProcessSteps({ variant = 'full', tone = 'light', limit }: Proces
             <span
               className={[
                 'font-display text-[0.8rem] font-bold tracking-[0.16em]',
-                isDark ? 'text-gold' : 'text-gold',
+                isDark ? 'text-gold' : 'text-gold-deep',
               ].join(' ')}
             >
               STEP {step.step}

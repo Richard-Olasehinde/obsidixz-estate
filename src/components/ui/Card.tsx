@@ -21,7 +21,7 @@ const markerTones = {
   plain: 'text-royal',
   filled: 'text-royal',
   ink: 'text-gold',
-  accent: 'text-gold',
+  accent: 'text-gold-deep',
 };
 
 export function Card({

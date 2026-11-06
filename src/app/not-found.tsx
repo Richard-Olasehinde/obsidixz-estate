@@ -13,7 +13,7 @@ export default function NotFound() {
   return (
     <Section tone="white" spacing="lg">
       <div className="max-w-2xl">
-        <p className="font-display text-[0.75rem] font-bold uppercase tracking-[0.2em] text-gold">
+        <p className="font-display text-[0.75rem] font-bold uppercase tracking-[0.2em] text-gold-deep">
           404
         </p>
         <SectionHeading

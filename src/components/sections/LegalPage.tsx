@@ -118,7 +118,7 @@ export function LegalPageLayout({
           <div className="grid gap-12 lg:grid-cols-[16rem_1fr] lg:gap-16">
             {/* Contents */}
             <nav aria-label="On this page" className="lg:sticky lg:top-28 lg:self-start">
-              <h2 className="font-display text-[0.72rem] font-bold uppercase tracking-[0.18em] text-charcoal/50">
+              <h2 className="font-display text-[0.72rem] font-bold uppercase tracking-[0.18em] text-charcoal/65">
                 On this page
               </h2>
               <ol className="mt-4 flex flex-col gap-2 border-l border-charcoal/10 pl-4">
@@ -133,7 +133,7 @@ export function LegalPageLayout({
                   </li>
                 ))}
               </ol>
-              <p className="mt-6 border-t border-charcoal/10 pt-4 text-[0.82rem] leading-relaxed text-charcoal/55">
+              <p className="mt-6 border-t border-charcoal/10 pt-4 text-[0.82rem] leading-relaxed text-charcoal/65">
                 See also:{' '}
                 <Link href={crossLink.href} className="text-royal underline underline-offset-2">
                   {crossLink.label}

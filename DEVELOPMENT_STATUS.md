@@ -1,12 +1,12 @@
 # DEVELOPMENT STATUS
 
-Last updated: **2026-11-06** — after Stage 6.
+Last updated: **2026-11-06** — after Stage 7.
 
 ---
 
 ## Current stage
 
-**Stage 6 — SEO and metadata.** Complete and committed. Work then proceeds to Stage 7.
+**Stage 7 — Testing and corrections.** Complete and committed. Work then proceeds to Stage 8.
 
 ## Stage register
 
@@ -17,7 +17,8 @@ Last updated: **2026-11-06** — after Stage 6.
 | 3 | Remaining core pages | ✅ Complete | `6455ffd` |
 | 4 | Navigation and functionality | ✅ Complete | `42e9572` |
 | 5 | Responsive implementation | ✅ Complete | `783794e` |
-| 6 | SEO and metadata | ✅ Complete | `feat: implement SEO metadata and site discovery configuration` |
+| 6 | SEO and metadata | ✅ Complete | `cb5e0cc` |
+| 7 | Testing and corrections | ✅ Complete | `test: verify website functionality and correct defects` |
 | 6 | SEO and metadata | ⬜ Not started | — |
 | 7 | Testing and corrections | ⬜ Not started | — |
 | 8 | Deployment preparation | ⬜ Not started | — |
@@ -277,6 +278,87 @@ in Stage 7.
 
 ---
 
+## Stage 7 — Testing and corrections
+
+### Defects found and corrected
+
+| # | Severity | Defect | Correction |
+| --- | --- | --- | --- |
+| 1 | **High** | The status panel on `/contact` was rendered from `isDeliveryConfigured()` in a client-reachable component, but the page itself was statically prerendered, so the notice could be baked at build time and be wrong at runtime. | The contact page is now `force-dynamic`; the notice reflects the live configuration on every request. |
+| 2 | **High** | Honeypot and submit-timing rejections returned `200 {"ok":true}`, shape-identical to a real acceptance. | Both now return `400` with `discarded: true` and **no delivery reference**, so nothing can mistake a discarded submission for a delivered one. |
+| 3 | **Medium** | Zod added 120 KB to the browser bundle — the contact page shipped 690 KB raw JS against 586 KB on other pages, for a seven-field form. | Replaced with a hand-written shared validator (`src/lib/enquiry-schema.ts`) used by both the form and the route. Contact page is now 586 KB raw / 181 KB gzip, identical to other pages. `zod` removed from dependencies. |
+| 4 | **Medium** | `text-charcoal/50`, `/55` and `/45` used for body text: 2.76:1–4.09:1, below WCAG AA 4.5:1. | Raised to `/65` (4.85:1 on mist, 5.29:1 on white) wherever used for text. Decorative borders unchanged. |
+| 5 | **Medium** | `gold` used as small text on light backgrounds: 3.71:1 on white, 3.31:1 on the gold tint. | Added `gold-deep` at `#8a5530` (6.14:1 on white, 5.48:1 on tint) and applied it to all small gold text. `gold` is retained for large display type, rules, bullets and motifs, where it meets the 3:1 non-text/large-text threshold. |
+| 6 | **Low** | The performance harness measured decoded bodies, reporting 571 KB "gzip" JS. | Rewritten to count bytes on the wire via the raw HTTP client. Real figure: 181 KB gzip. |
+| 7 | **Low** | Mobile menu closed itself in an effect, triggering a React `set-state-in-effect` lint error. | Closed in the link click handlers instead. |
+
+### Tests performed and results
+
+| # | Test | Method | Result |
+| --- | --- | --- | --- |
+| 1 | All eight routes return 200 HTML | `npm run smoke` | ✅ 8/8 |
+| 2 | No broken internal links or in-page anchors | smoke (crawls every `href` on every page) | ✅ 0 broken |
+| 3 | No missing referenced assets | smoke | ✅ 4/4 assets |
+| 4 | Titles, descriptions, canonicals unique and correct | smoke | ✅ 8/8 each |
+| 5 | One `<h1>` per page, no skipped heading levels | smoke | ✅ 8/8 |
+| 6 | All images have descriptive alt text | smoke | ✅ 2/2 |
+| 7 | No fabricated claims (guarantees, testimonials, statistics, brokerage, wholesaling, legal entity names, TODOs, lorem) | smoke, 18 patterns | ✅ 0 violations |
+| 8 | JSON-LD parses; contains no invented address/telephone/rating | smoke | ✅ |
+| 9 | Breadcrumb JSON-LD + visible breadcrumb on inner pages | smoke | ✅ 8/8 |
+| 10 | robots.txt and sitemap.xml correct and complete | smoke | ✅ 8 entries, no localhost |
+| 11 | Security headers present, `x-powered-by` absent | smoke | ✅ |
+| 12 | 404 returns 404 with a way back | smoke | ✅ |
+| 13 | API: invalid email, missing required field, missing privacy acknowledgement, bad enum, short message | smoke + production run | ✅ all 400 |
+| 14 | API: honeypot and timing rejections are never success-shaped | smoke | ✅ `discarded: true`, no reference |
+| 15 | API: GET/PUT/PATCH/DELETE rejected with 405 | smoke | ✅ |
+| 16 | API: unconfigured delivery returns 503, never `ok:true` | smoke, dev + production | ✅ `delivery_not_configured` |
+| 17 | API: configured delivery succeeds end-to-end | mock receiver on :4401 with `ENQUIRY_DELIVERY_MODE=webhook` | ✅ 200, bearer token sent, payload intact, reference matched |
+| 18 | API: rate limiter blocks the 6th submission from one IP | mock receiver run | ✅ 429 on attempt 6, retry-after 3600 s |
+| 19 | API: upstream 500 → 502 with a retryable message, no internal detail leaked | mock receiver returning 500 | ✅ |
+| 20 | API: upstream 400 → 500, non-retryable message | mock receiver returning 400 | ✅ |
+| 21 | API: upstream 201 → success | mock receiver returning 201 | ✅ |
+| 22 | API: oversized body → 413; wrong content type → 415; malformed JSON → 400 | mock receiver run | ✅ |
+| 23 | API: HTML/script payload stored as text, never executed | sent `<script>alert(1)</script>` → delivered verbatim to the destination | ✅ |
+| 24 | Colour contrast, 30 foreground/background pairs | `npm run a11y` | ✅ 0 failures |
+| 25 | Document structure: `<main>`, skip link, header, footer, labelled nav, no positive tabindex, no empty links/buttons | `npm run a11y`, all 8 routes | ✅ |
+| 26 | Every form control has a label | `npm run a11y` | ✅ 8/8 |
+| 27 | No dangling `aria-describedby` / `aria-labelledby` | `npm run a11y` | ✅ |
+| 28 | Error region uses `aria-live`, `required` attributes present, honeypot hidden, privacy link present | `npm run a11y` | ✅ |
+| 29 | Layout metrics: text fits every multi-column cell at 360–1440 px | `npm run layout` | ✅ 26/26 |
+| 30 | Performance budgets: JS/HTML/CSS gzip per page, hero image, caching, compression | `npm run perf` | ✅ 28/28 |
+| 31 | No secrets in the repository | regex scan of `src`, `scripts`, `public`, `package.json` | ✅ 0 findings |
+| 32 | No non-public env var reaches the client bundle | grep for `ENQUIRY_WEBHOOK_TOKEN`/`URL` in `.next/static/chunks` | ✅ absent |
+| 33 | Production server log free of unhandled errors during the whole suite | `grep -icE "error\|exception\|unhandled"` | ✅ 0 |
+| 34 | TypeScript strict, ESLint, production build | `npm run check` | ✅ all pass |
+
+### Not performed, and why
+
+- **Real-browser rendering.** No browser engine can run in this environment (Chromium requires
+  `libnss3`, which is unavailable; the package index and browser CDNs are unreachable). Layout
+  geometry is proved by font-metric measurement instead, which covers the overflow class but
+  cannot see image cropping, colour reproduction, scrollbar behaviour or hover/focus styling in
+  a real compositor.
+- **Lighthouse / Core Web Vitals field data.** Requires a browser and a deployed origin.
+- **Screen-reader testing.** Structure and ARIA were verified statically; no assistive technology
+  was run against the pages.
+- **Cross-browser testing.** Only the served production HTML/CSS/JS was inspected.
+- **Penetration testing.** The API's input handling and rate limiting were exercised, but no
+  formal security assessment was carried out.
+
+These are listed as open verification items for the founder, not as passes.
+
+### Remaining limitations (documented, accepted)
+
+| Limitation | Impact | Mitigation if it matters |
+| --- | --- | --- |
+| Rate limiter is in-process memory | Resets on restart; per-instance on multi-instance hosts | Replace `src/lib/rate-limit.ts` with a durable store |
+| No CAPTCHA | Determined bots that respect neither honeypot nor timing can still submit | The rate limiter bounds the damage; enable a CAPTCHA at the delivery adapter boundary |
+| Duplicate protection is client-side | A deliberate resubmit will send twice | Server-side idempotency needs storage; judged unnecessary here |
+| Contact form delivery unconfigured | Enquiries cannot be submitted online | Founder supplies `ENQUIRY_WEBHOOK_URL` — see ENVIRONMENT_SETUP.md |
+| Legal pages are drafts | Cannot be published as final without review | Marked visibly; register below |
+
+---
+
 ## Outstanding items register
 
 Classification follows the brief: **A** development blocker, **B** configuration blocker,
@@ -296,6 +378,41 @@ Classification follows the brief: **A** development blocker, **B** configuration
 Full detail, including exactly what to supply and where it appears, is in
 [ASSETS_PENDING.md](./ASSETS_PENDING.md) and
 [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md).
+
+### Launch blockers — nothing else prevents deployment
+
+| ID | Blocker | Where it appears | What closes it |
+| --- | --- | --- | --- |
+| BLK-01 | No enquiry submission destination | `/contact`, `/api/enquiry` | Set `ENQUIRY_DELIVERY_MODE=webhook` and `ENQUIRY_WEBHOOK_URL`, then send one real test enquiry |
+| BLK-02 | No business email address | Footer, `/contact`, `/privacy-policy` | Set `NEXT_PUBLIC_BUSINESS_EMAIL` to a monitored mailbox |
+| BLK-03 | Approved logo asset not supplied | Site header, footer, favicon, OG image | Supply the SVG/PNG set — see ASSETS_PENDING.md §1 |
+
+### Legal review register — required before publication
+
+| ID | Item | Appears in | Status |
+| --- | --- | --- | --- |
+| LR-01 | Legal entity name and registered address | `/privacy-policy` §1, `/terms-of-service` §1 | ⬜ Pending |
+| LR-02 | Governing law | `/terms-of-service` §10 | ⬜ Pending |
+| LR-03 | Jurisdiction for disputes | `/terms-of-service` §10 | ⬜ Pending |
+| LR-04 | Retention period for enquiries | `/privacy-policy` §7 | ⬜ Pending |
+| LR-05 | Privacy contact route | `/privacy-policy` §8, §11 | ⬜ Pending |
+| LR-06 | Applicable data-protection framework | `/privacy-policy` §8 | ⬜ Pending |
+| LR-07 | Hosting provider and data-processing terms | `/privacy-policy` §4 | ⬜ Pending (depends on host choice) |
+| LR-08 | Enquiry delivery provider | `/privacy-policy` §5 | ⬜ Pending (depends on BLK-01) |
+| LR-09 | Liability wording reviewed by a qualified adviser | `/terms-of-service` §8 | ⬜ Pending |
+
+Each of these renders on the live page as a gold, dashed "To be confirmed before publication"
+panel with a plain-language explanation. None has been filled with a plausible-looking guess.
+
+### Verification items for the founder (not blocker, but unverified here)
+
+| Item | Why it is open |
+| --- | --- |
+| Visual check in a real browser at 360 / 390 / 768 / 1024 / 1440 px | No browser engine in this environment; geometry was proved by font metrics |
+| Screen-reader pass (VoiceOver / NVDA / TalkBack) | Structure and ARIA verified statically only |
+| Cross-browser check (Safari, Firefox, Chrome, Edge) | Only the served production output was inspected |
+| Lighthouse / Core Web Vitals | Requires a browser and a deployed origin |
+| One real end-to-end enquiry after configuration | Needs the founder's destination |
 
 ---
 

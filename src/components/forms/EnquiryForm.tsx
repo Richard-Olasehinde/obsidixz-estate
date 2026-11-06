@@ -5,8 +5,7 @@ import Link from 'next/link';
 import {
   ENQUIRY_TYPES,
   LIMITS,
-  enquirySchema,
-  fieldErrors,
+  validateEnquiry,
   type EnquiryType,
 } from '@/lib/enquiry-schema';
 import { FieldWrapper, fieldClasses } from '@/components/forms/fields';
@@ -97,15 +96,15 @@ export function EnquiryForm() {
     });
   }, []);
 
-  // Validate against the shared schema. Returns a field → message map.
-  const validate = useCallback((input: FormValues) => {
-    const result = enquirySchema.safeParse({
+  // Validate against the shared validator. Returns a field → message map.
+  const validate = useCallback((input: FormValues): Record<string, string> => {
+    const result = validateEnquiry({
       ...input,
       companyName: input.companyName || undefined,
       targetLocation: input.targetLocation || undefined,
       enquiryType: input.enquiryType || undefined,
     });
-    return result.success ? {} : fieldErrors(result.error);
+    return result.ok ? {} : result.errors;
   }, []);
 
   /**
@@ -526,7 +525,7 @@ export function EnquiryForm() {
                   aria-hidden="true"
                   className={[
                     'mt-1 text-right font-sans text-[0.75rem]',
-                    messageLength > LIMITS.message.max * 0.9 ? 'text-gold-deep' : 'text-charcoal/45',
+                    messageLength > LIMITS.message.max * 0.9 ? 'text-gold-deep' : 'text-charcoal/65',
                   ].join(' ')}
                 >
                   {messageLength} / {LIMITS.message.max}
@@ -603,7 +602,7 @@ export function EnquiryForm() {
       </div>
 
       <div className="mt-7 flex flex-col gap-3 border-t border-charcoal/10 pt-6 sm:flex-row sm:items-center sm:justify-between">
-        <p className="order-2 max-w-sm text-[0.8rem] leading-relaxed text-charcoal/55 sm:order-1">
+        <p className="order-2 max-w-sm text-[0.8rem] leading-relaxed text-charcoal/65 sm:order-1">
           Your enquiry is sent over an encrypted connection when this site is served over HTTPS.
         </p>
         <Button

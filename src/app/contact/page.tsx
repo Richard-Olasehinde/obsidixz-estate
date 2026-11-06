@@ -112,7 +112,7 @@ export default function ContactPage() {
               <dl className="mt-4 flex flex-col divide-y divide-charcoal/10">
                 {hasPublicEmail ? (
                   <div className="py-3 first:pt-0">
-                    <dt className="font-sans text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-charcoal/50">
+                    <dt className="font-sans text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-charcoal/65">
                       Email
                     </dt>
                     <dd className="mt-1">
@@ -126,7 +126,7 @@ export default function ContactPage() {
                   </div>
                 ) : (
                   <div className="py-3 first:pt-0">
-                    <dt className="font-sans text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-charcoal/50">
+                    <dt className="font-sans text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-charcoal/65">
                       Email
                     </dt>
                     <dd className="mt-1 text-[0.9rem] leading-relaxed text-charcoal/65">
@@ -138,7 +138,7 @@ export default function ContactPage() {
 
                 {hasPublicPhone ? (
                   <div className="py-3">
-                    <dt className="font-sans text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-charcoal/50">
+                    <dt className="font-sans text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-charcoal/65">
                       Telephone
                     </dt>
                     <dd className="mt-1">
@@ -153,7 +153,7 @@ export default function ContactPage() {
                 ) : null}
 
                 <div className="py-3">
-                  <dt className="font-sans text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-charcoal/50">
+                  <dt className="font-sans text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-charcoal/65">
                     Operating hours
                   </dt>
                   <dd className="mt-1 text-[0.9rem] leading-relaxed text-charcoal/70">
@@ -204,7 +204,7 @@ export default function ContactPage() {
               <li key={step.title} className="bg-white p-6">
                 <span
                   aria-hidden="true"
-                  className="font-display text-[0.72rem] font-bold tracking-[0.16em] text-gold"
+                  className="font-display text-[0.72rem] font-bold tracking-[0.16em] text-gold-deep"
                 >
                   {String(index + 1).padStart(2, '0')}
                 </span>

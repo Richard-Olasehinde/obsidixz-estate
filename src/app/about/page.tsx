@@ -78,7 +78,7 @@ export default function AboutPage() {
             <dl className="mt-5 flex flex-col divide-y divide-charcoal/10">
               {facts.map((fact) => (
                 <div key={fact.term} className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0 sm:flex-row sm:justify-between sm:gap-6">
-                  <dt className="font-sans text-[0.78rem] font-semibold uppercase tracking-[0.1em] text-charcoal/50">
+                  <dt className="font-sans text-[0.78rem] font-semibold uppercase tracking-[0.1em] text-charcoal/65">
                     {fact.term}
                   </dt>
                   <dd className="text-[0.95rem] font-medium text-ink sm:text-right">{fact.detail}</dd>

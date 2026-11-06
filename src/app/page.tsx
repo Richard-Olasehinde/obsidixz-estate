@@ -222,7 +222,7 @@ export default function HomePage() {
 
         <div className="mt-12 grid gap-6 lg:grid-cols-[1.35fr_1fr]">
           <Card variant="accent" className="gap-5">
-            <p className="font-sans text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-gold">
+            <p className="font-sans text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-gold-deep">
               Primary audience
             </p>
             <CardTitle>Residential real-estate investors</CardTitle>
@@ -247,7 +247,7 @@ export default function HomePage() {
 
           <div className="flex flex-col gap-6">
             <Card variant="filled" className="gap-4">
-              <p className="font-sans text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-charcoal/50">
+              <p className="font-sans text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-charcoal/65">
                 Secondary audience
               </p>
               <CardTitle>Property acquisition operators</CardTitle>
@@ -313,7 +313,7 @@ export default function HomePage() {
               <li key={principle.title} className="bg-white p-6">
                 <span
                   aria-hidden="true"
-                  className="font-display text-[0.72rem] font-bold tracking-[0.16em] text-gold"
+                  className="font-display text-[0.72rem] font-bold tracking-[0.16em] text-gold-deep"
                 >
                   {String(index + 1).padStart(2, '0')}
                 </span>

@@ -67,7 +67,7 @@ export default function WhoWeServePage() {
       <Section tone="white" spacing="lg" aria-labelledby="primary-heading">
         <div className="grid gap-12 lg:grid-cols-[1fr_1.15fr] lg:gap-16">
           <div className="lg:sticky lg:top-28 lg:self-start">
-            <p className="font-sans text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-gold">
+            <p className="font-sans text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-gold-deep">
               Primary audience
             </p>
             <SectionHeading
@@ -88,7 +88,7 @@ export default function WhoWeServePage() {
               <div key={scenario.title} className="bg-white p-6">
                 <span
                   aria-hidden="true"
-                  className="font-display text-[0.72rem] font-bold tracking-[0.16em] text-gold"
+                  className="font-display text-[0.72rem] font-bold tracking-[0.16em] text-gold-deep"
                 >
                   {String(index + 1).padStart(2, '0')}
                 </span>
@@ -108,7 +108,7 @@ export default function WhoWeServePage() {
       <Section tone="mist" spacing="lg" aria-labelledby="secondary-heading">
         <div className="grid gap-12 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
           <div>
-            <p className="font-sans text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-charcoal/50">
+            <p className="font-sans text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-charcoal/65">
               Secondary audience
             </p>
             <SectionHeading

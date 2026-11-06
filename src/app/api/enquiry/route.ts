@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { NextResponse } from 'next/server';
-import { enquiryRequestSchema, enquirySchema, fieldErrors } from '@/lib/enquiry-schema';
+import { validateEnquiry, validateEnquiryRequest } from '@/lib/enquiry-schema';
 import { deliverEnquiry, getDeliveryMode, getWebhookUrl } from '@/lib/enquiry-delivery';
 import { checkRateLimit } from '@/lib/rate-limit';
 
@@ -154,23 +154,23 @@ export async function POST(request: Request) {
       }
     }
 
-    /* 7 — validation, using the shared schema */
-    const requestParse = enquiryRequestSchema.safeParse(candidate);
-    if (!requestParse.success) {
+    /* 7 — validation, using the shared validator */
+    const requestParse = validateEnquiryRequest(candidate);
+    if (!requestParse.ok) {
       return errorResponse(
         400,
         'validation_failed',
         'Please check the highlighted fields and try again.',
-        { fields: fieldErrors(requestParse.error) },
+        { fields: requestParse.errors },
       );
     }
 
-    const enquiryParse = enquirySchema.safeParse(requestParse.data);
-    if (!enquiryParse.success) {
-      // Should be unreachable — the request schema extends this one. Kept as a
-      // guard so a future schema divergence fails closed rather than open.
+    const enquiryParse = validateEnquiry(requestParse.data);
+    if (!enquiryParse.ok) {
+      // Should be unreachable — the request validator calls this one. Kept as a
+      // guard so a future divergence fails closed rather than open.
       return errorResponse(400, 'validation_failed', 'Please check the highlighted fields.', {
-        fields: fieldErrors(enquiryParse.error),
+        fields: enquiryParse.errors,
       });
     }
 
