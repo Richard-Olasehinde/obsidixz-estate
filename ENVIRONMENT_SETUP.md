@@ -204,9 +204,16 @@ This is tracked as **BLK-01** and stays open until that manual confirmation happ
 
 1. **Create a Resend account** at `resend.com` using the business address
    `obsidixz.realestate@outlook.com`.
-2. **Add the domain.** Use a **sending subdomain**, which is Resend's recommended pattern and
-   keeps sending reputation separate from any future mailbox hosting:
-   `send.realestate.obsidixz.pp.ua`
+2. **Add the domain.** In Resend's *Add Domain* field, enter the **base domain**
+   `realestate.obsidixz.pp.ua` — **not** `send.realestate.obsidixz.pp.ua`.
+
+   Resend then creates its records on a `send.` subdomain of what you added, which gives you the
+   sending subdomain `send.realestate.obsidixz.pp.ua`. That is the recommended pattern: it keeps
+   sending reputation separate from the website host and from any future mailbox hosting.
+
+   > **Correction (2026-11-06):** this section previously said to add
+   > `send.realestate.obsidixz.pp.ua` directly. That is wrong — it would make Resend generate
+   > records on `send.send.realestate.obsidixz.pp.ua`. Add the base domain.
 3. **Publish the DNS records** Resend shows for that domain. Resend generates them; copy them
    exactly rather than typing them. The pattern is:
 
@@ -217,6 +224,9 @@ This is tracked as **BLK-01** and stays open until that manual confirmation happ
    | `TXT` | `resend._domainkey.send.realestate` | `p=…` (long public key from Resend) | DKIM signing |
 
    Notes that matter:
+   - **The Resend dashboard is authoritative for these values, not the table above.** Resend has
+     changed where it places DKIM over time (apex `resend._domainkey` in older setups, under
+     `send.` in newer ones). Copy the three records exactly as shown on the domain's page.
    - Your DNS provider may append the root domain automatically. If it does, the host fields
      become `send` and `resend._domainkey.send`, **not** the full names above.
    - The DKIM value is long enough that panels sometimes truncate it or split it into quoted
@@ -225,7 +235,10 @@ This is tracked as **BLK-01** and stays open until that manual confirmation happ
    - If the DNS provider is Cloudflare, set these records to **DNS only** (grey cloud), not
      proxied.
    - Region varies (`us-east-1`, `eu-west-1`, …). Use the exact host Resend displays.
-4. **Add DMARC** (Resend does not create it):
+4. **Do not enable Receiving.** If the domain page offers inbound/receiving, leave it off. It
+   would add an MX record on the apex and intercept mail addressed to that hostname.
+
+5. **Add DMARC** (Resend does not create it):
 
    | Type | Name | Value |
    | --- | --- | --- |
@@ -233,9 +246,9 @@ This is tracked as **BLK-01** and stays open until that manual confirmation happ
 
    Start at `p=none` and read the reports before tightening to `quarantine` or `reject`.
    Tightening before every legitimate sender is aligned will filter your own mail.
-5. **Wait for verification.** Usually minutes; DNS propagation can take up to 72 hours. The
+6. **Wait for verification.** Usually minutes; DNS propagation can take up to 72 hours. The
    domain must show **Verified** in Resend before sending will work.
-6. **Create an API key** at `resend.com/api-keys`, scoped to **Sending access** only. It begins
+7. **Create an API key** at `resend.com/api-keys`, scoped to **Sending access** only. It begins
    with `re_`. Treat it as a password.
 
 ### 5.4 Environment variables
@@ -247,10 +260,15 @@ ENQUIRY_FROM_EMAIL=enquiries@send.realestate.obsidixz.pp.ua
 ENQUIRY_TO_EMAIL=obsidixz.realestate@outlook.com
 ```
 
+The sender mailbox (`enquiries@…`) does not need to exist as a real mailbox — Resend sends on
+behalf of the domain, not from an account. Replies are not routed to it either: the adapter sets
+`reply_to` to the **enquirer's** address, so hitting Reply in Outlook answers the visitor directly.
+That is also why the apex `send.` MX record exists — it catches bounces, not real replies.
+
 | Variable | Required | Notes |
 | --- | --- | --- |
 | `RESEND_API_KEY` | Yes | Server-side only. **Never** prefix with `NEXT_PUBLIC_`. |
-| `ENQUIRY_FROM_EMAIL` | Yes | Must be on the verified sending subdomain or Resend rejects the message. |
+| `ENQUIRY_FROM_EMAIL` | Yes | Local part can be anything (`enquiries@`, `noreply@`, `website@`); the domain part must be the verified sending subdomain. `send.realestate.obsidixz.pp.ua` is the domain verified in Resend, so it is the safe choice. |
 | `ENQUIRY_TO_EMAIL` | Yes | The monitored inbox. No default is guessed — if absent, nothing is sent. |
 | `ENQUIRY_WEBHOOK_TIMEOUT_MS` | No | Reused for the Resend request. Default 10000, capped 30000. |
 
