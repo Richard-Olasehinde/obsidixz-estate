@@ -4,9 +4,11 @@ import { Section } from '@/components/layout/Section';
 import { Container } from '@/components/layout/Container';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { PageHero } from '@/components/sections/PageHero';
+import { EnquiryForm } from '@/components/forms/EnquiryForm';
 import { Diamond } from '@/components/ui/Motifs';
 import { buildMetadata } from '@/lib/metadata';
 import { businessContact, hasPublicEmail, hasPublicPhone } from '@/lib/site';
+import { isDeliveryConfigured } from '@/lib/enquiry-delivery';
 
 export const metadata: Metadata = buildMetadata({
   title: 'Contact',
@@ -17,6 +19,37 @@ export const metadata: Metadata = buildMetadata({
 
 // The delivery state is read on the server so the page can state it honestly.
 export const dynamic = 'force-dynamic';
+
+/** An honest status panel: tells the visitor exactly what will happen. */
+function FormStatusNotice() {
+  const configured = isDeliveryConfigured();
+
+  if (configured) {
+    return (
+      <div className="flex gap-3 border-l-4 border-royal bg-royal-tint px-5 py-4">
+        <span aria-hidden="true" className="mt-1.5 h-2 w-2 shrink-0 bg-royal" />
+        <p className="text-[0.9rem] leading-relaxed text-charcoal/85">
+          <span className="font-semibold text-ink">Online enquiries are open.</span> Your enquiry
+          goes directly to the business inbox, and you will see a confirmation only once it has been
+          accepted.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex gap-3 border-l-4 border-gold bg-gold-tint px-5 py-4">
+      <span aria-hidden="true" className="mt-1.5 h-2 w-2 shrink-0 bg-gold" />
+      <p className="text-[0.9rem] leading-relaxed text-charcoal/85">
+        <span className="font-semibold text-ink">Online submission is not yet switched on.</span>{' '}
+        You can complete and validate the form, but the business has not yet connected a receiving
+        destination, so submissions cannot be delivered. The form tells you clearly when a
+        submission cannot be sent and keeps your text in place, so nothing is lost. In the meantime,
+        please use the contact routes opposite.
+      </p>
+    </div>
+  );
+}
 
 export default function ContactPage() {
   return (
@@ -35,8 +68,11 @@ export default function ContactPage() {
             <span id="form-heading">
               <SectionHeading eyebrow="Enquiry form" title="Send us your brief" as="h2" />
             </span>
-            <div className="mt-6 border border-charcoal/12 bg-white p-7 text-[0.95rem] leading-relaxed text-charcoal/75">
-              The enquiry form is implemented in the next stage.
+            <div className="mt-6">
+              <FormStatusNotice />
+            </div>
+            <div className="mt-6">
+              <EnquiryForm />
             </div>
           </div>
 
