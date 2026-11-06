@@ -211,11 +211,15 @@ export const privacySections: LegalSection[] = [
     blocks: [
       {
         kind: 'paragraph',
-        text: 'Questions about this policy, or requests relating to your information, can be sent through the contact form on this website. Select "General Business Enquiry" and state that your message concerns privacy.',
+        text: 'Questions about this policy, or requests relating to your information, can be sent to obsidixz.realestate@outlook.com or through the contact form on this website. If you use the form, select "General Business Enquiry" and state that your message concerns privacy.',
+      },
+      {
+        kind: 'paragraph',
+        text: 'That mailbox is the official business address and is monitored. It is the contact route for both general and privacy correspondence.',
       },
       pending(
-        'A direct contact address for privacy matters',
-        'A monitored business mailbox for privacy correspondence has not been supplied and has not been invented.',
+        'Data-protection framework and any additional statutory rights',
+        'Which data-protection regime governs the business, and the specific statutory response period and escalation route that follow from it, have not been decided. This is a legal review item, not a contact-details gap — the mailbox above is confirmed.',
       ),
     ],
   },

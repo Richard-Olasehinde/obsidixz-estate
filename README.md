@@ -15,12 +15,14 @@ architecture and a configurable enquiry form.
 
 | Item | Status |
 | --- | --- |
-| Current stage | **All eight stages complete** — awaiting founder-supplied configuration |
+| Current stage | **All eight stages complete**, plus the confirmed-details and Resend update |
 | Stages complete | 1, 2, 3, 4, 5, 6, 7, 8 |
 | Production build | Passing (`npm run build`) |
 | Verification | 135 route/SEO/API checks, 26 layout checks, 28 performance checks, full a11y pass |
-| Contact form delivery | **Requires founder configuration** — see [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) |
-| Approved logo asset | **Not supplied** — temporary text lockup in use, see [ASSETS_PENDING.md](./ASSETS_PENDING.md) |
+| Contact form delivery | **Built and tested, not yet live.** Resend integration ready; needs an account, a verified sending domain and an API key — see [ENVIRONMENT_SETUP.md §5](./ENVIRONMENT_SETUP.md#5-resend-transactional-email) |
+| Approved logo asset | ✅ **Supplied and integrated** — see [ASSETS_PENDING.md](./ASSETS_PENDING.md) |
+| Business email | ✅ **Confirmed** — `obsidixz.realestate@outlook.com` |
+| Canonical domain | ✅ **Confirmed** — `https://realestate.obsidixz.pp.ua` |
 
 Detailed, always-current status lives in [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md).
 
@@ -34,7 +36,7 @@ Detailed, always-current status lives in [DEVELOPMENT_STATUS.md](./DEVELOPMENT_S
 | UI library | **React 19** | Required by Next.js |
 | Styling | **Tailwind CSS 4** | Design tokens live in CSS (`@theme`), no config sprawl |
 | Language | **TypeScript** (strict) | Type safety across components and the form contract |
-| Validation | **Zod 4** | One schema shared by the client form and the server route handler |
+| Validation | **Hand-written, dependency-free** | One schema shared by the client form and the server route handler. Zod was removed after it added 120 KB of client JS for a seven-field form |
 | Fonts | **`@fontsource-variable`** (self-hosted) | Montserrat + Open Sans served from own origin: no third-party font CDN, no cookie/consent implications, better performance |
 | Icons / motifs | Inline SVG | No icon library dependency |
 | Images | Photographs in `/public/images` served through `next/image` | Optimised, sized, lazy-loaded |
@@ -61,7 +63,8 @@ npm install
 
 # 3. Create your local environment file
 cp .env.example .env.local
-#    Then edit .env.local — at minimum set NEXT_PUBLIC_SITE_URL.
+#    Then edit .env.local. The domain and business email already have
+#    working defaults; set the Resend variables to switch the form on.
 #    The site runs fine with everything left blank; the contact form will
 #    report "submission not configured" until a destination is supplied.
 

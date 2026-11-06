@@ -130,8 +130,9 @@ export default function ContactPage() {
                       Email
                     </dt>
                     <dd className="mt-1 text-[0.9rem] leading-relaxed text-charcoal/65">
-                      A monitored business address is being set up. It has not been published here
-                      because no address has been confirmed.
+                      A business address is configured for this site and is published here once the
+                      deployment environment provides it. Enquiries can still be sent through the
+                      form on this page.
                     </dd>
                   </div>
                 )}

@@ -193,7 +193,8 @@ export async function POST(request: Request) {
     if (outcome.status === 'not_configured') {
       console.error(
         `[enquiry:${reference}] NOT DELIVERED — no submission destination is configured. ` +
-          `Set ENQUIRY_DELIVERY_MODE=webhook and ENQUIRY_WEBHOOK_URL. See ENVIRONMENT_SETUP.md.`,
+          `Set ENQUIRY_DELIVERY_MODE=webhook with ENQUIRY_WEBHOOK_URL, or =resend with ` +
+          `RESEND_API_KEY, ENQUIRY_FROM_EMAIL and ENQUIRY_TO_EMAIL. See ENVIRONMENT_SETUP.md.`,
       );
       return errorResponse(
         503,

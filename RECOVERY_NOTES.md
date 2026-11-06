@@ -51,7 +51,7 @@ Browser
         ├── method → content-type → 16 KB body cap → per-IP rate limit
         ├── honeypot → submit-timing
         ├── validateEnquiryRequest()  ← same module the browser uses
-        └── deliverEnquiry()  →  webhook | console | unconfigured
+        └── deliverEnquiry()  →  resend | webhook | console | unconfigured
 ```
 
 **Key invariant:** success is shown only when the configured destination returns 2xx. With no
@@ -97,8 +97,12 @@ foundation in place, five committed verification gates.
 | Route/SEO/API suite | `npm run smoke` | ✅ 135/135 |
 | Performance budgets | `npm run perf` | ✅ 28/28 |
 
-Open blockers: enquiry destination (BLK-01), business email (BLK-02), approved logo (BLK-03), and
-nine legal review items (LR-01…LR-09). All are listed in `DEVELOPMENT_STATUS.md`.
+Open blockers: enquiry delivery (BLK-01 — Resend account, verified domain, API key, and a real
+message confirmed in the inbox), and the legal review items (LR-01…LR-09). All are listed in
+`DEVELOPMENT_STATUS.md`.
+
+**Closed 2026-11-06:** BLK-02 (business email confirmed as `obsidixz.realestate@outlook.com`) and
+BLK-03 (logo supplied and integrated).
 
 ---
 
@@ -126,11 +130,12 @@ Then, in a fresh Arena conversation, paste:
 
 The likely tasks, in order:
 
-1. **Founder supplies the enquiry destination** → set the two env vars, send one real test
-   enquiry, close BLK-01.
-2. **Founder supplies the business email** → set `NEXT_PUBLIC_BUSINESS_EMAIL`, close BLK-02.
-3. **Founder supplies the logo** → replace the placeholder marker in `LogoLockup.tsx`, regenerate
-   favicons and the OG card, close BLK-03.
+1. **Founder activates Resend** → create the account, verify `send.realestate.obsidixz.pp.ua`, add
+   the DNS records, set the four env vars, send one real enquiry, **find it in the Outlook inbox**,
+   then close BLK-01. See `ENVIRONMENT_SETUP.md` §5.
+2. ~~Business email~~ — **done.** Confirmed and published.
+3. ~~Logo~~ — **done.** Supplied and integrated. If vector art arrives later, swap two `src`
+   values in `LogoLockup.tsx` and regenerate the favicon and OG card.
 4. **Legal review** → resolve each gold "to be confirmed" panel in `src/lib/legal.ts`, then delete
    the corresponding entry from the review register.
 5. **Visual verification** → browser check at the five widths, screen reader, cross-browser.
@@ -154,7 +159,9 @@ These are the constraints that make the site honest. They are not style preferen
 5. **Never fabricate a form success.** If delivery is not configured, the form must say so.
 6. **Never commit secrets.** `.env*` is git-ignored except `.env.example`, which contains variable
    names and placeholders only.
-7. **Do not recreate the Obsidixz logo.** Use the supplied asset or leave the text lockup.
+7. **Do not recreate or modify the Obsidixz logo.** The approved artwork is committed in
+   `public/brand/`. Do not recolour, trace, upscale or redraw it. If a different variant is needed,
+   ask the founder for it.
 
 `npm run smoke` enforces rules 1, 3 and 4 mechanically with 18 content patterns. Rules 2, 5 and 6
 are enforced by structure (the pending-marker component, the delivery adapter, `.gitignore`) and

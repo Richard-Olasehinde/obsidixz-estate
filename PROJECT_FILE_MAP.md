@@ -9,8 +9,9 @@ obsidixz-estate/
 │   ├── components/             Reusable UI (layout, ui, sections, seo, forms, brand)
 │   └── lib/                    Configuration, content data and validation logic
 ├── public/                     Static files served from the site root
+│   ├── brand/                  The two supplied logo PNGs (on-light, on-dark)
 │   ├── images/                 The two illustrative photographs
-│   └── favicon*, og-image.png  Placeholder brand assets (see ASSETS_PENDING.md)
+│   └── favicon*, og-image.png  Generated placeholders (see ASSETS_PENDING.md)
 ├── scripts/                    Verification gates and asset generators (not part of the build)
 │   └── fonts/                  Measurement-only font instances
 ├── docs root                   Project documentation (*.md)
@@ -45,7 +46,7 @@ obsidixz-estate/
 | --- | --- |
 | `layout/` | `Container`, `Section` (tone/spacing wrapper), `SiteHeader`, `SiteFooter` |
 | `ui/` | `Button` (`ButtonLink`, `ButtonAnchor`), `Card`, `Eyebrow`, `SectionHeading`, `Motifs`, `ProcessSteps`, `FieldList` |
-| `brand/` | `LogoLockup` — **the single place** to swap in the approved logo |
+| `brand/` | `LogoLockup` — renders the supplied artwork by `tone`; **the single place** to change the logo |
 | `sections/` | `HomeHero`, `PageHero` (with breadcrumb), `CtaBand`, `LegalPage` |
 | `seo/` | `StructuredData` (Organization + WebSite), `BreadcrumbData` (per inner page) |
 | `forms/` | `EnquiryForm` (client component) and `fields.tsx` (labelled field primitives) |
@@ -58,7 +59,7 @@ obsidixz-estate/
 | `metadata.ts` | `buildMetadata()` — per-page title/description/canonical/OG/Twitter |
 | `routes.ts` | Single source of truth for public routes (sitemap, smoke test, footer) |
 | `enquiry-schema.ts` | **The single validator**, shared by the client form and the API route |
-| `enquiry-delivery.ts` | Delivery adapter: `webhook` / `console` / `unconfigured` |
+| `enquiry-delivery.ts` | Delivery adapter: `resend` / `webhook` / `console` / `unconfigured`, plus the Resend payload builder and HTML escaping |
 | `rate-limit.ts` | In-memory per-IP submission limiter |
 | `sanitise.ts` | Input normalisation used before delivery |
 | `content.ts` | Page copy as typed data (deliverable fields, process steps, audiences, principles) |
@@ -68,8 +69,10 @@ obsidixz-estate/
 
 | File | Notes |
 | --- | --- |
-| `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png` | **Placeholder** icons — replace when the approved logo arrives |
-| `og-image.png` | 1200×630 social card |
+| `brand/obsidixz-logo-on-light.png` | **Supplied artwork** — header lockup, dark on light |
+| `brand/obsidixz-logo-on-dark.png` | **Supplied artwork** — footer lockup, light on dark |
+| `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png` | **Generated placeholders** — replace when vector art arrives |
+| `og-image.png` | 1200×630 social card, generated placeholder |
 | `images/hero-neighbourhood.jpg`, `images/research-desk.jpg` | Illustrative photographs, credits in `ASSETS_PENDING.md` |
 
 ## `scripts/`
@@ -93,7 +96,7 @@ obsidixz-estate/
 | `postcss.config.mjs` | Tailwind 4 PostCSS plugin |
 | `eslint.config.mjs` | Flat config, `next/core-web-vitals` + `next/typescript` |
 | `package.json` | Scripts and dependencies |
-| `.env.example` | Variable names and explanations — **no values** |
+| `.env.example` | Variable names and explanations. The confirmed domain and business email are the only values present |
 | `.gitignore` | Excludes builds, caches, logs and all real env files |
 
 ## Documentation
@@ -108,6 +111,7 @@ obsidixz-estate/
 | `DEPLOYMENT.md` | Build, host, domain, verification |
 | `RECOVERY_NOTES.md` | Resume development from a fresh conversation |
 | `ASSETS_PENDING.md` | Missing brand assets and image credits |
+| `FINAL_HANDOVER.md` | Audit results, A–E blocker classification, what was and was not verified |
 
 
 ---

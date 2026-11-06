@@ -1,74 +1,64 @@
+import Image from 'next/image';
+
 /**
- * TEMPORARY TEXT-BASED BUSINESS LOCKUP.
+ * OBSIDIXZ LOGO LOCKUP
+ * ====================
  *
- * The approved parent Obsidixz logo asset (wordmark and emblem, light and dark
- * variants) has NOT been supplied in this repository. Per the brand rules, the
- * logo must not be recreated, approximated or substituted with a final mark.
+ * Renders the approved Obsidixz logo artwork, supplied by the founder as a
+ * transparent PNG pair (2000×1500 RGBA source). No part of the mark is redrawn,
+ * recoloured, re-proportioned or approximated: the files in `public/brand/` are
+ * the supplied artwork with surrounding transparent padding trimmed and the
+ * image downscaled to its display size. Verified pixel-identical to the resized
+ * source.
  *
- * This component therefore renders a restrained, type-only business lockup that
- * can be swapped for the supplied SVG in one place. See ASSETS_PENDING.md.
+ * Two variants, chosen by the `tone` prop:
+ *
+ *   tone="dark"  (default) → `obsidixz-logo-on-light.png`
+ *     Dark square, black OBSIDIXZ wordmark, black-outlined white interlock
+ *     diamond. For light backgrounds. Used in the site header.
+ *
+ *   tone="light"           → `obsidixz-logo-on-dark.png`
+ *     White square, white OBSIDIXZ wordmark, white-outlined black interlock
+ *     diamond. For dark backgrounds. Used in the footer.
+ *
+ * Accessibility: the artwork contains the wordmark text, so the image itself is
+ * `alt=""` and `aria-hidden`. The surrounding link supplies the accessible name
+ * (`aria-label="Obsidixz Real Estate — home"`). This avoids the screen reader
+ * announcing "Obsidixz" twice.
+ *
+ * The supplied artwork is PNG, not SVG. If vector source is ever provided, drop
+ * it in as `obsidixz-logo-on-light.svg` / `-on-dark.svg` and switch the two
+ * `src` values below; nothing else needs to change.
  */
 
+const LOCKUP_WIDTH = 160;
+const LOCKUP_HEIGHT = 132;
+
 type LogoLockupProps = {
-  /** `dark` = for light backgrounds. `light` = for dark backgrounds. */
+  /** `dark` = artwork for light backgrounds. `light` = artwork for dark backgrounds. */
   tone?: 'dark' | 'light';
   className?: string;
-  /** Compact variant removes the descriptor line (used in the mobile bar). */
+  /** Renders the logo at a smaller size (used where vertical space is tight). */
   compact?: boolean;
 };
 
 export function LogoLockup({ tone = 'dark', className = '', compact = false }: LogoLockupProps) {
-  const isLight = tone === 'light';
+  const src = tone === 'light' ? '/brand/obsidixz-logo-on-dark.png' : '/brand/obsidixz-logo-on-light.png';
+
+  const width = compact ? Math.round(LOCKUP_WIDTH * 0.82) : LOCKUP_WIDTH;
+  const height = compact ? Math.round(LOCKUP_HEIGHT * 0.82) : LOCKUP_HEIGHT;
 
   return (
-    <span className={`inline-flex items-center gap-2.5 ${className}`}>
-      {/* Placeholder geometric marker — retained only until the real emblem is supplied. */}
-      <span
-        aria-hidden="true"
-        className={[
-          'grid h-8 w-8 shrink-0 place-items-center border',
-          isLight ? 'border-white/45' : 'border-royal/45',
-        ].join(' ')}
-      >
-        <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" aria-hidden="true">
-          <rect
-            x="1"
-            y="1"
-            width="6"
-            height="6"
-            stroke={isLight ? '#FFFFFF' : '#315C9B'}
-            strokeWidth="1.6"
-          />
-          <rect
-            x="9"
-            y="9"
-            width="6"
-            height="6"
-            stroke="#B47745"
-            strokeWidth="1.6"
-          />
-        </svg>
-      </span>
-
-      <span className="flex flex-col leading-none">
-        <span
-          className={[
-            'font-display text-[0.98rem] font-bold uppercase tracking-[0.14em]',
-            isLight ? 'text-white' : 'text-ink',
-          ].join(' ')}
-        >
-          Obsidixz
-        </span>
-        <span
-          className={[
-            'mt-1 font-sans text-[0.58rem] font-semibold uppercase tracking-[0.24em]',
-            isLight ? 'text-[#AFC0D8]' : 'text-charcoal/65',
-            compact ? 'sr-only' : '',
-          ].join(' ')}
-        >
-          Real Estate
-        </span>
-      </span>
-    </span>
+    <Image
+      src={src}
+      alt=""
+      aria-hidden="true"
+      width={width}
+      height={height}
+      priority={tone === 'dark'}
+      sizes={`${width}px`}
+      className={`h-auto w-auto ${className}`}
+      style={{ maxHeight: compact ? 44 : 54 }}
+    />
   );
 }

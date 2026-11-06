@@ -1,13 +1,14 @@
 # DEVELOPMENT STATUS
 
-Last updated: **2026-11-06** — after Stage 8.
+Last updated: **2026-11-06** — after Stage 8, plus the confirmed-details and Resend update.
 
 ---
 
 ## Current stage
 
-**Stage 8 — Deployment preparation.** Complete and committed. All eight stages are done; the
-post-Stage-8 audit and handover follow.
+**Stage 8 — Deployment preparation.** Complete and committed. All eight stages are done, audited,
+and handed over. A post-handover update absorbed two founder-confirmed details (business email,
+domain) and added a Resend delivery mode — see the section below.
 
 ## Stage register
 
@@ -498,6 +499,62 @@ These are listed as open verification items for the founder, not as passes.
 
 ---
 
+## Post-handover update — confirmed details and Resend
+
+Two details previously recorded as blockers were confirmed by the founder on 2026-11-06, and a
+Resend delivery path was added at the founder's request.
+
+### Files changed
+
+| File | Change |
+| --- | --- |
+| `public/brand/obsidixz-logo-on-light.png` | New. Supplied artwork, padding trimmed, 640 px wide |
+| `public/brand/obsidixz-logo-on-dark.png` | New. Supplied artwork, padding trimmed, 640 px wide |
+| `src/components/brand/LogoLockup.tsx` | Rewritten: renders the supplied artwork instead of a type lockup |
+| `src/lib/site.ts` | Confirmed email as an overridable fallback; `approvedLogoAsset` resolved |
+| `src/app/contact/page.tsx` | Obsolete "address is being set up" fallback reworded |
+| `src/lib/legal.ts` | Privacy contact now gives the confirmed mailbox; one placeholder narrowed |
+| `src/lib/enquiry-delivery.ts` | New `resend` mode, payload builder, HTML escaping, test seam |
+| `src/app/api/enquiry/route.ts` | Log message now names both configuration paths |
+| `scripts/check-layout-metrics.mjs` | Header metric models the real logo width, not the old text lockup |
+| `.env.example` | Resend block; confirmed email value |
+| `ENVIRONMENT_SETUP.md` | New §5: full Resend setup, DNS, verification, what was and was not tested |
+| `DEPLOYMENT.md` | Resend activation, DNS records for email, stronger manual-confirmation gate |
+| `README.md`, `PROJECT_FILE_MAP.md`, `FINAL_HANDOVER.md`, `ASSETS_PENDING.md` | Updated to match |
+
+### Resend delivery tests — actually run
+
+Executed against the real adapter with a local mock endpoint, using the dev-only
+`RESEND_ENDPOINT_OVERRIDE` seam. No real Resend account or API key was used.
+
+| # | Test | Result |
+| --- | --- | --- |
+| 1 | Valid enquiry through `resend` mode | ✅ `200`, reference returned |
+| 2 | Payload the destination receives | ✅ `Bearer` auth, `from` on sending subdomain, `to` = `obsidixz.realestate@outlook.com`, `reply_to` = enquirer, subject, HTML + plain text |
+| 3 | HTML injection in name and message | ✅ Escaped to `&lt;script&gt;` / `&lt;img`; no raw markup |
+| 4 | Invalid email | ✅ `400 validation_failed`, nothing sent |
+| 5 | Honeypot | ✅ `400 {discarded:true}` |
+| 6 | Resend returns 500 | ✅ `502`, `retryable: true` |
+| 7 | Resend returns 401 | ✅ `500`, `retryable: false`, key and body not leaked |
+| 8 | `ENQUIRY_TO_EMAIL` absent | ✅ `503 delivery_not_configured`, mock received **0** requests |
+| 9 | Contact page status, fully configured | ✅ "Online enquiries are open." |
+| 10 | Contact page status, recipient missing | ✅ "Online submission is not yet switched on." |
+| 11 | `npm run check` / layout / a11y / smoke | ✅ All pass (135/135 smoke) |
+
+### Not tested — stated rather than assumed
+
+| Item | Why |
+| --- | --- |
+| A real Resend account and API key | Requires the founder's account |
+| A verified sending domain | Requires DNS access |
+| A message actually arriving in `obsidixz.realestate@outlook.com` | Requires all of the above |
+| Real-browser rendering of the new logo | Still no browser engine in this environment |
+
+**BLK-01 therefore remains open.** A `200` from Resend means Resend accepted the message; it does
+not prove arrival. Closing it requires a human to see the email.
+
+---
+
 ## Outstanding items register
 
 Classification follows the brief: **A** development blocker, **B** configuration blocker,
@@ -505,9 +562,9 @@ Classification follows the brief: **A** development blocker, **B** configuration
 
 | ID | Class | Item | Needed by | Owner |
 | --- | --- | --- | --- | --- |
-| BLK-01 | **B** | Enquiry form submission destination not supplied (`ENQUIRY_WEBHOOK_URL` or equivalent) | Stage 4 / launch | Founder |
-| BLK-02 | **B** | Business email address for the site and for privacy requests (`NEXT_PUBLIC_BUSINESS_EMAIL`) | Stage 3 / launch | Founder |
-| BLK-03 | **B** | Approved logo assets — wordmark and emblem, light and dark, SVG or transparent PNG | Launch | Founder |
+| BLK-01 | **B** | Enquiry delivery not yet active. Adapter and Resend integration are built and tested against a mock; the Resend account, verified domain and API key are not supplied | Launch | Founder |
+| ~~BLK-02~~ | ✅ | **Closed 2026-11-06** — `obsidixz.realestate@outlook.com` confirmed and published | — | — |
+| ~~BLK-03~~ | ✅ | **Closed 2026-11-06** — transparent logo pair supplied and integrated | — | — |
 | BLK-04 | **D** | Legal entity name, registration number, registered address | Legal page review | Founder + adviser |
 | BLK-05 | **D** | Governing law and jurisdiction for Terms | Legal page review | Founder + adviser |
 | BLK-06 | **D** | Data retention period and privacy contact route | Legal page review | Founder |
@@ -522,9 +579,9 @@ Full detail, including exactly what to supply and where it appears, is in
 
 | ID | Blocker | Where it appears | What closes it |
 | --- | --- | --- | --- |
-| BLK-01 | No enquiry submission destination | `/contact`, `/api/enquiry` | Set `ENQUIRY_DELIVERY_MODE=webhook` and `ENQUIRY_WEBHOOK_URL`, then send one real test enquiry |
-| BLK-02 | No business email address | Footer, `/contact`, `/privacy-policy` | Set `NEXT_PUBLIC_BUSINESS_EMAIL` to a monitored mailbox |
-| BLK-03 | Approved logo asset not supplied | Site header, footer, favicon, OG image | Supply the SVG/PNG set — see ASSETS_PENDING.md §1 |
+| BLK-01 | Enquiry delivery not active | `/contact`, `/api/enquiry` | Create the Resend account, verify `send.realestate.obsidixz.pp.ua`, set the four variables, then **confirm a real message in the Outlook inbox**. See ENVIRONMENT_SETUP.md §5 |
+| ~~BLK-02~~ | ✅ Closed — email confirmed and published | — | — |
+| ~~BLK-03~~ | ✅ Closed — logo supplied and integrated | — | Favicon and OG card still use the generated placeholder until a vector mark is supplied |
 
 ### Legal review register — required before publication
 
@@ -534,7 +591,7 @@ Full detail, including exactly what to supply and where it appears, is in
 | LR-02 | Governing law | `/terms-of-service` §10 | ⬜ Pending |
 | LR-03 | Jurisdiction for disputes | `/terms-of-service` §10 | ⬜ Pending |
 | LR-04 | Retention period for enquiries | `/privacy-policy` §7 | ⬜ Pending |
-| LR-05 | Privacy contact route | `/privacy-policy` §8, §11 | ⬜ Pending |
+| LR-05 | Privacy contact route | `/privacy-policy` §8, §11 | 🟡 Address confirmed and published; **statutory framework and response period** still to be reviewed |
 | LR-06 | Applicable data-protection framework | `/privacy-policy` §8 | ⬜ Pending |
 | LR-07 | Hosting provider and data-processing terms | `/privacy-policy` §4 | ⬜ Pending (depends on host choice) |
 | LR-08 | Enquiry delivery provider | `/privacy-policy` §5 | ⬜ Pending (depends on BLK-01) |
@@ -559,11 +616,14 @@ panel with a plain-language explanation. None has been filled with a plausible-l
 
 All eight implementation stages are complete. What remains is not development:
 
-1. **Close BLK-01** — create an enquiry destination and set `ENQUIRY_DELIVERY_MODE=webhook` plus
-   `ENQUIRY_WEBHOOK_URL`. Then send one real test enquiry through the browser and confirm arrival.
+1. **Close BLK-01** — create the Resend account, verify `send.realestate.obsidixz.pp.ua`, set
+   `ENQUIRY_DELIVERY_MODE=resend`, `RESEND_API_KEY`, `ENQUIRY_FROM_EMAIL` and `ENQUIRY_TO_EMAIL`,
+   then send one real enquiry and **find it in `obsidixz.realestate@outlook.com`**. Follow
+   [ENVIRONMENT_SETUP.md §5](./ENVIRONMENT_SETUP.md#5-resend-transactional-email).
    This is the single change that turns the site from "built" into "usable".
-2. **Close BLK-02** — set `NEXT_PUBLIC_BUSINESS_EMAIL` to a monitored mailbox.
-3. **Close BLK-03** — supply the approved logo set (ASSETS_PENDING.md §1).
+2. ~~Close BLK-02~~ — **done.** Email confirmed and published.
+3. ~~Close BLK-03~~ — **done.** Logo supplied and integrated. Optional: supply vector (SVG) art
+   to replace the generated favicon and social card.
 4. **Complete the legal review** — LR-01 to LR-09, with a qualified adviser for LR-02, LR-03 and
    LR-09. Nothing should be published while the gold "to be confirmed" panels remain.
 5. **Deploy** following `DEPLOYMENT.md`, then work through its 15-point post-deploy checklist.

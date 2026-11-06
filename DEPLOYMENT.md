@@ -108,9 +108,22 @@ site can never send enquiries into a log nobody reads.
 ## 5. Contact form activation
 
 The form is fully implemented but will report honestly that submission is unavailable until a
-destination exists. To switch it on:
+destination exists.
 
-1. **Create a destination.** Anything that accepts `POST` with a JSON body and returns `2xx`:
+**Recommended: Resend transactional email.** One account, no third-party form service, and the
+confirmation email goes straight to `obsidixz.realestate@outlook.com`. Full setup — account,
+domain verification, DNS records, variables and the manual confirmation step — is in
+[ENVIRONMENT_SETUP.md §5](./ENVIRONMENT_SETUP.md#5-resend-transactional-email). In short:
+
+```dotenv
+ENQUIRY_DELIVERY_MODE=resend
+RESEND_API_KEY=re_xxxxxxxxxxxx
+ENQUIRY_FROM_EMAIL=enquiries@send.realestate.obsidixz.pp.ua
+ENQUIRY_TO_EMAIL=obsidixz.realestate@outlook.com
+```
+
+**Alternative: a generic webhook.** Anything that accepts `POST` with a JSON body and returns
+`2xx`:
    - *Formspree* — free tier, one signup, gives `https://formspree.io/f/xxxxxxxx`
    - *Formspark*, *Basin* — similar
    - *Make / Zapier / n8n* — a webhook that forwards to email or a spreadsheet
@@ -122,6 +135,11 @@ destination exists. To switch it on:
    - it arrives at the destination;
    - the browser shows the success state (only shown on a genuine `2xx`);
    - the reference shown on screen matches the `reference` field in the payload.
+
+   > **For Resend, this step is mandatory and cannot be skipped.** A `200` only means Resend
+   > accepted the message; it does not prove arrival. Do not record delivery as working — and do
+   > not close **BLK-01** — until the email is visibly present in
+   > `obsidixz.realestate@outlook.com`, checked including the spam folder.
 
 4. If it fails, the visitor sees an honest failure message and their text stays in the form. Check
    the server log: failures are logged with the reference and the upstream status.
@@ -154,6 +172,30 @@ that hosts `obsidixz.pp.ua`** — you do not register `realestate.obsidixz.pp.ua
 6. **Only after the domain resolves**, confirm `NEXT_PUBLIC_SITE_URL` matches it exactly. If it is
    wrong, canonicals, the sitemap and Open Graph URLs will all point to the wrong host.
 
+### DNS records for email sending
+
+The site's DNS and the sending-domain DNS live on the same zone but must not collide. Publishing
+the Resend records on the **apex** of `realestate.obsidixz.pp.ua` would take over its inbound mail;
+they belong on a `send.` subdomain. See [ENVIRONMENT_SETUP.md §5.3](./ENVIRONMENT_SETUP.md#53-account-and-domain-setup)
+for the exact values, which Resend generates and you copy.
+
+| Type | Name | Purpose |
+| --- | --- | --- |
+| `MX` | `send.realestate` | Bounce handling / Return-Path |
+| `TXT` | `send.realestate` | SPF |
+| `TXT` | `resend._domainkey.send.realestate` | DKIM |
+| `TXT` | `_dmarc.realestate` | DMARC (`p=none` to start) |
+
+The site records (`CNAME`/`A` for `realestate`) and the mail records (`send.realestate`) are
+independent: adding the mail records does not affect site hosting, and vice versa.
+
+### Canonical host — confirmed
+
+`NEXT_PUBLIC_SITE_URL=https://realestate.obsidixz.pp.ua`. This is also the hardcoded fallback in
+`src/lib/site.ts`, so canonicals, `sitemap.xml`, `robots.txt`, Open Graph URLs and JSON-LD are all
+correct even if the variable is not set. Set it explicitly anyway so the deployed value is
+visible in configuration rather than inherited from code.
+
 HSTS is not set by the application. Enable it at the host once HTTPS is confirmed working, so a
 misconfiguration cannot lock visitors out of an insecure origin.
 
@@ -178,7 +220,7 @@ Then check by hand:
 | 3 | Footer legal links | Both work |
 | 4 | Every CTA button | Navigates to the intended page |
 | 5 | `/contact` status notice | Says online enquiries are open (after §5) |
-| 6 | Valid enquiry submission | Success state, and the message arrives at the destination |
+| 6 | Valid enquiry submission | Success state, **and the message is visibly present in `obsidixz.realestate@outlook.com`** (check spam). A success state alone is not enough — see §5 |
 | 7 | Invalid enquiry (bad email) | Inline error, no submission sent |
 | 8 | Enquiry with the network offline | Honest failure message, text preserved |
 | 9 | `/robots.txt` | Allows `/`, disallows `/api/`, names the sitemap |
@@ -199,6 +241,9 @@ Then check by hand:
 | Update contrast or layout if copy changes | After editing long copy or headings | `npm run layout` measures the strings it knows about; add new long strings to `scripts/check-layout-metrics.mjs` |
 | Refresh the social card | If positioning changes | `./scripts/generate-og-image.sh` (needs ImageMagick + fonttools) |
 | Rotate the webhook token | If it is ever exposed | Change it at the destination, update the host env, redeploy. Rotate first — the old value is already public. |
+| Rotate the Resend API key | Immediately if it is ever exposed, or every 6 months | Create a new key in Resend, update `RESEND_API_KEY` on the host, redeploy, then revoke the old key. Rotating first matters: the old key is already public. |
+| Check the Resend domain stays verified | Monthly | Resend dashboard → Domains. If it flips to pending, a DNS record was changed or removed. |
+| Check the sending reputation | Monthly | Resend dashboard → Emails. Watch for a rise in bounces or complaints; both damage deliverability for the Outlook inbox. |
 | Review legal pages | Before launch and after any change to data handling | See the legal review register in [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md) |
 
 ---

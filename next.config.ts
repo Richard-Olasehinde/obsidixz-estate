@@ -5,8 +5,10 @@ import type { NextConfig } from 'next';
  *
  * Deliberately omitted:
  * - `X-Frame-Options` / `Content-Security-Policy: frame-ancestors` — nothing on this site is
- *   private or state-changing, so there is nothing for frame-busting to protect. A blanket `DENY`
- *   would break legitimate embedding and hosted preview environments.
+ *   private or state-changing, so there is nothing for frame-busting to protect, and framing is
+ *   not an attack surface here. Kept out deliberately: an earlier justification claimed a blanket
+ *   `DENY` would break hosted previews, which is not true (the preview proxies the app directly).
+ *   If framing protection is ever wanted it can be added as `SAMEORIGIN` with no downside.
  * - `Strict-Transport-Security` — only meaningful over HTTPS at the production host, where the
  *   host (e.g. Vercel) manages it. Documented in DEPLOYMENT.md.
  */

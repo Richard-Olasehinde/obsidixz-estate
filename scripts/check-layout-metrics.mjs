@@ -189,17 +189,24 @@ for (const vw of [360, 390, 768, 1024, 1280, 1440]) {
 }
 
 /* --- Header: logo + nav + CTA must fit on one line -------------------- */
+/*
+ * The header logo is now the supplied artwork, not a type lockup. Its rendered
+ * width is fixed at 160 CSS px by LogoLockup (LOCKUP_WIDTH), which is the value
+ * measured here. The previous calculation modelled the text lockup and would
+ * silently stop testing the real thing.
+ */
+const LOGO_RENDER_WIDTH = 160; // must match LOCKUP_WIDTH in src/components/brand/LogoLockup.tsx
 for (const vw of [1280, 1440, 1920]) {
   const content = contentWidth(vw);
   const navLabels = ['Home', 'About Us', 'Services', 'How It Works', 'Who We Serve', 'Contact'];
   const navWidth = navLabels.reduce((sum, label) => sum + OPEN_SANS.width(label, 14.72), 0) + 7 * 28;
-  const logoWidth = 32 + 10 + MONSERRAT_BOLD.width('OBSIDIXZ', 15.68, 0.14);
+  const logoWidth = LOGO_RENDER_WIDTH;
   const ctaWidth = OPEN_SANS.width('Discuss Your Requirements', 15.2) + 48;
   const total = logoWidth + 24 + navWidth + 24 + ctaWidth;
   check(
     `header fits on one line at ${vw}px`,
     total <= content,
-    `logo+nav+cta = ${total.toFixed(0)}px, content = ${content.toFixed(0)}px`,
+    `logo(${LOGO_RENDER_WIDTH})+nav+cta = ${total.toFixed(0)}px, content = ${content.toFixed(0)}px`,
   );
 }
 

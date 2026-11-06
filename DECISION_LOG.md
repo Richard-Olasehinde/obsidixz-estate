@@ -514,3 +514,91 @@ and the nine legal review items, rather than a generic build-and-deploy walkthro
 
 **Why:** The technical deployment is routine. The reasons this site is not yet launchable are
 entirely non-technical, and burying them under a hosting tutorial would invite a premature launch.
+
+---
+
+## Post-Stage-8 — Confirmed details and Resend integration
+
+### D48. The supplied logo is used as-is; the placeholder is retired
+
+**Decision:** The two transparent PNGs supplied by the founder on 2026-11-06 replace the
+type-only placeholder lockup. `public/brand/obsidixz-logo-on-light.png` (dark artwork) is used in
+the header; `public/brand/obsidixz-logo-on-dark.png` (light artwork) in the footer.
+
+**Why:** The instruction was to use the approved assets and not to recreate or modify the logo.
+The processing applied is the minimum needed to place the artwork in a page: surrounding
+transparent padding trimmed (2000×1500 → 635×524 of actual content) and a Lanczos downscale to
+640 px wide, roughly 4× the 160 px display width. **No recolouring, redrawing, re-proportioning or
+vector tracing.** This was verified programmatically by comparing the committed files against a
+resized copy of the source and confirming pixel equality.
+
+**Consequence:** The files are PNG, not SVG. They are a fixed ~35 KB each, served through
+`next/image` with AVIF/WebP negotiation, so the wire cost is much lower. If vector source is ever
+supplied, the swap is two `src` values in one component.
+
+### D49. The confirmed email is a dated default in code, not only configuration
+
+**Decision:** `src/lib/site.ts` holds `CONFIRMED_BUSINESS_EMAIL = 'obsidixz.realestate@outlook.com'`
+as a fallback, with `NEXT_PUBLIC_BUSINESS_EMAIL` taking precedence.
+
+**Why:** The earlier rule — never hardcode an address — existed to stop an *invented* address
+being baked in. The address is now confirmed by the founder, and the failure mode reversed: a
+deployment that forgets the variable would silently publish a site with no contact route at all.
+A dated, attributed, overridable default removes that failure mode without reintroducing the
+original risk. The telephone number is explicitly **not** treated this way, because it remains
+unconfirmed.
+
+### D50. Resend is a third delivery mode, not a rewrite of the delivery path
+
+**Decision:** `ENQUIRY_DELIVERY_MODE=resend` joins `webhook`, `console` and `unconfigured` inside
+the existing `deliverEnquiry()` adapter. The route handler, validator, sanitiser, honeypot,
+timing check and rate limiter are untouched.
+
+**Why:** The user asked for a Resend integration that preserves existing validation, sanitisation
+and rate limiting. Adding a mode at the adapter boundary achieves that with no change to the
+security-relevant code. It also keeps the webhook route available for anyone who already has an
+endpoint.
+
+### D51. A missing `ENQUIRY_TO_EMAIL` means "not configured", never a guessed recipient
+
+**Decision:** `isDeliveryConfigured()` requires all three of `RESEND_API_KEY`,
+`ENQUIRY_FROM_EMAIL` and `ENQUIRY_TO_EMAIL`. If the recipient is absent, the route returns
+`503 delivery_not_configured` and sends nothing.
+
+**Why:** Defaulting the recipient would be worse than not sending. A stranger's enquiry contains
+their name, business email and commercial plans; sending it to a guessed address leaks it outside
+the business. Verified by test: with the variable absent, the API returned 503 and the mock
+received zero requests.
+
+### D52. Email HTML is escaped at output, and only there
+
+**Decision:** `escapeHtml()` in the delivery adapter escapes `& < > " '` for the Resend HTML body.
+`src/lib/sanitise.ts` continues to normalise rather than escape.
+
+**Why:** These were previously compatible because neither destination rendered HTML — one was
+JSON, the other plain text. Email HTML is a rendering context, so escaping becomes mandatory
+there. Keeping the two concerns separate is the correct model: sanitise for storage and
+transport, escape for the specific output context. Verified by submitting
+`<script>alert(1)</script>` and `<img src=x onerror=...>`: the captured HTML contained `&lt;script&gt;`
+and `&lt;img`, and no raw markup.
+
+### D53. Success is defined as "Resend accepted", and the docs say so
+
+**Decision:** A 2xx from Resend yields a success state. Documentation and the handover state
+explicitly that this does **not** prove arrival in the Outlook inbox, and BLK-01 stays open until
+a human confirms a real message.
+
+**Why:** It would be easy, and wrong, to treat a 200 from Resend as "email works". The whole
+premise of this build is that the site never claims more than it can prove. The gap between
+"accepted for delivery" and "in a human's inbox" is exactly the kind of gap that gets glossed
+over, so it is documented in three places rather than assumed.
+
+### D54. A dev-only endpoint override exists so the delivery path is actually tested
+
+**Decision:** `RESEND_ENDPOINT_OVERRIDE` can point the adapter at a local mock. It is ignored when
+`NODE_ENV=production`.
+
+**Why:** Without a real API key there is no way to exercise status mapping, header handling and
+payload shape. Refusing to test it would mean shipping a delivery path that had never run. The
+production guard means the seam cannot redirect a live enquiry, and it is documented as a test
+seam rather than an integration point so nobody mistakes it for one.

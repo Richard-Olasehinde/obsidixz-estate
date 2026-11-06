@@ -38,11 +38,21 @@ export const siteConfig = {
 } as const;
 
 /**
- * Founder-supplied values. Only populate from environment variables that the
- * founder sets — never hardcode an address, phone number or mailbox here.
+ * Founder-supplied values.
+ *
+ * The business email below is the founder-confirmed official address
+ * (2026-11-06), not an invented one. It is a deliberate, dated default so the
+ * published site and its legal pages always show a working contact route even
+ * when the deployment environment has not set the variable. The environment
+ * variable still wins, so the address can be changed by configuration alone.
+ *
+ * The telephone number has NOT been confirmed and remains blank. It is not
+ * defaulted, not inferred and not published.
  */
+const CONFIRMED_BUSINESS_EMAIL = 'obsidixz.realestate@outlook.com';
+
 export const businessContact = {
-  email: (process.env.NEXT_PUBLIC_BUSINESS_EMAIL ?? '').trim(),
+  email: (process.env.NEXT_PUBLIC_BUSINESS_EMAIL ?? '').trim() || CONFIRMED_BUSINESS_EMAIL,
   phone: (process.env.NEXT_PUBLIC_BUSINESS_PHONE ?? '').trim(),
 } as const;
 
@@ -62,7 +72,9 @@ export const PENDING_BUSINESS_DETAILS = {
   privacyContactEmail: null,
   dataRetentionPeriod: null,
   hostingRegion: null,
-  approvedLogoAsset: null,
+  // Resolved 2026-11-06: the founder supplied the transparent logo pair. See
+  // public/brand/ and DECISION_LOG.md D48.
+  approvedLogoAsset: 'supplied',
 } as const;
 
 export type NavItem = {
