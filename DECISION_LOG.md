@@ -632,3 +632,31 @@ not a substitute for it.
 
 **If the founder wants it published**, the change is one line in the footer or the legal pages.
 That is a separate, explicit decision. Publishing is not the default.
+
+### D57. Contacting Brevo support is authorised, after an earlier decision not to
+
+**Decision:** the founder reversed the earlier instruction. A support ticket **may** be raised with
+Brevo, specifically to resolve account validation by SMS.
+
+**Why this changed:** the original instruction was made when the question was *"will this provider
+accept our domain?"* — a pre-sales question that email research could answer. The current problem is
+different in kind: a code that never arrives on a Nigerian (+234) mobile number. Brevo's own community
+forum contains a thread on exactly this failure, and in every resolved case the account had to be
+validated manually by staff. There is no self-service route around it.
+
+**This is not a re-opening of provider selection.** Brevo has accepted the domain, issued correct
+records and authenticated it. The blocker is account validation, not the provider's suitability.
+
+**Constraints that still apply to the ticket:**
+
+- Do **not** accept a paid upgrade in order to obtain support. The screenshot showing
+  *"Phone support is available on the Professional plan"* is not a reason to buy a plan — the ticket
+  form itself is available on free.
+- Do **not** use a purchased virtual or disposable number to pass verification. It breaches Brevo's
+  terms, and it would leave account recovery tied to a number the founder does not control.
+- **No secrets in the ticket beyond the minimum.** Phone number, account email and support ID are
+  required; the API key never is.
+
+**If the ticket fails**, the fallback remains Zoho ZeptoMail, with the caveat already recorded that it
+also requires manual account review — so it may substitute one waiting room for another rather than
+removing it.
