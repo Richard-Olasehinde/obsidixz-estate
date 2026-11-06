@@ -44,11 +44,20 @@ export function buildMetadata({
       title: ogTitle ?? fullTitle,
       description,
       url,
+      images: [
+        {
+          url: '/og-image.png',
+          width: 1200,
+          height: 630,
+          alt: `${siteConfig.name} — property lead research`,
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title: ogTitle ?? fullTitle,
       description,
+      images: ['/og-image.png'],
     },
   };
 }

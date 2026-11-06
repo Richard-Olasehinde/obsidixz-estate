@@ -1,20 +1,19 @@
 # DEVELOPMENT STATUS
 
-Last updated: **2026-11-06** — after Stage 1.
+Last updated: **2026-11-06** — after Stage 2.
 
 ---
 
 ## Current stage
 
-**Stage 1 — Repository inspection, project foundation and design system.** Complete and
-committed. Work then proceeds sequentially to Stage 2.
+**Stage 2 — Homepage.** Complete and committed. Work then proceeds to Stage 3.
 
 ## Stage register
 
 | # | Stage | Status | Commit |
 | --- | --- | --- | --- |
-| 1 | Repository inspection, foundation, design system | ✅ Complete | `chore: establish project foundation and brand design system` |
-| 2 | Homepage | ⬜ Not started | — |
+| 1 | Repository inspection, foundation, design system | ✅ Complete | `f0994f4` |
+| 2 | Homepage | ✅ Complete | `feat: build Obsidixz Real Estate homepage` |
 | 3 | Remaining core pages | ⬜ Not started | — |
 | 4 | Navigation and functionality | ⬜ Not started | — |
 | 5 | Responsive implementation | ⬜ Not started | — |
@@ -89,6 +88,67 @@ handlers instead of an effect.
 - The logo is a text lockup, not the approved asset. See
   [ASSETS_PENDING.md](./ASSETS_PENDING.md).
 - No contact form yet (Stage 3/4).
+
+---
+
+## Stage 2 — Homepage
+
+### Files created
+
+`src/app/page.tsx` (full homepage), `src/components/sections/HomeHero.tsx`,
+`src/components/sections/PageHero.tsx`, `src/components/ui/ProcessSteps.tsx`,
+`src/components/ui/FieldList.tsx`, `src/lib/content.ts` (section copy as typed data),
+`src/lib/routes.ts` (route registry), `src/app/sitemap.ts`, `src/app/robots.ts`,
+`src/components/seo/StructuredData.tsx`, `scripts/smoke-test.mjs`,
+`public/images/hero-neighbourhood.jpg`, `public/images/research-desk.jpg`.
+
+### Sections built (brief §8, Page 1, in order)
+
+1. Hero — "Smarter Research. Better Real Estate Opportunities." with the approved supporting
+   text, primary CTA *Explore Our Services* → `/services`, secondary *Discuss Your Requirements*
+   → `/contact`, plus a "service at a glance" panel.
+2. Introduction to Obsidixz Real Estate.
+3. The property research challenge — four market realities, no claims about our own scale.
+4. Property Lead Research service introduction, including an explicit "what the service is not".
+5. What customers receive — all eleven deliverable fields with honest caveats.
+6. Who we serve — investors primary, acquisition operators secondary, scope disclaimer.
+7. How the process works — five steps, with a link to the full page.
+8. Our approach to research and information quality — six working principles.
+9. Final enquiry CTA.
+
+Footer and header (built in Stage 1) carry the full navigation and the legal links.
+
+### Defects found and corrected in Stage 2
+
+| Defect | Cause | Correction |
+| --- | --- | --- |
+| Hero headline would overflow its column between 1024–1279 px | Two-column hero started at `lg` while the display type still sized for a full-width column | Two-column layout moved to `xl`; display clamp reduced to `clamp(2.15rem, 1.05rem + 3.4vw, 3.75rem)`; headline lines made blocking spans so they wrap rather than overflow |
+| Desktop navigation could collide with the CTA button at 1024 px | Nav + CTA measured ~810–900 px against a 960 px content width | Desktop nav and header CTA now appear at `xl`; the mobile disclosure panel serves 1024–1279 px |
+| Eyebrow label risked wrapping in the hero's narrower column | Label too long for the available width | Shortened to "Property research" |
+| `operatorScenarios` exported but unused, failing lint | Content created for a later page | Removed the unused import |
+
+### Tests run in Stage 2
+
+| Test | Result |
+| --- | --- |
+| `npm run typecheck` | ✅ Pass |
+| `npm run lint` | ✅ Pass |
+| `npm run build` | ✅ Pass — `/`, `/_not-found`, `/robots.txt`, `/sitemap.xml` prerendered |
+| Compiled Tailwind SVG data URI escaping | ✅ Verified in emitted CSS — classes such as `bg-[linear-gradient(...)]` compile correctly |
+| Design tokens present in emitted CSS | ✅ Verified — `--color-royal: #315c9b`, `bg-royal`, `text-h2`, `text-display`, `text-lead` all emitted |
+| No hard-coded widths causing overflow | ✅ Verified — no fixed width over 360 px in emitted CSS |
+| Homepage renders 200 with correct title and canonical | ✅ Verified via HTTP |
+| Single `<h1>` per page, no skipped heading levels | ✅ Verified — sequence `1 2 2 2 3 3 3 3 2 …` |
+| All `<img>` elements have descriptive alt text | ✅ Verified — 2 images, 0 missing |
+| Forbidden-claim scan (guarantees, testimonials, statistics, brokerage, wholesaling, legal entity names, placeholders) | ✅ Pass — one false positive resolved by adding explicit-negation support to the check |
+| JSON-LD present and parses | ✅ Verified — 2 blocks, `Organization` + `WebSite` |
+| `robots.txt` and `sitemap.xml` correct | ✅ Verified via HTTP |
+
+**Not verified in Stage 2:** pixel-level visual rendering at specific widths. This sandbox has no
+browser engine (`chromium` cannot be launched: missing `libnss3`, and the sandbox has no package
+index or CDN access for it). Layout correctness was assessed by reading the emitted CSS and doing
+the arithmetic for each breakpoint. The founder should confirm visually in a browser — see
+Stage 5 for the width list.
 
 ---
 

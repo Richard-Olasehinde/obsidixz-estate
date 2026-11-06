@@ -5,6 +5,7 @@ import './globals.css';
 import { SiteHeader } from '@/components/layout/SiteHeader';
 import { SiteFooter } from '@/components/layout/SiteFooter';
 import { siteConfig } from '@/lib/site';
+import { SiteStructuredData } from '@/components/seo/StructuredData';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -32,11 +33,13 @@ export const metadata: Metadata = {
     url: siteConfig.url,
     title: `${siteConfig.name} — US Property Lead Research`,
     description: siteConfig.description,
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Obsidixz Real Estate — property lead research' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: `${siteConfig.name} — US Property Lead Research`,
     description: siteConfig.description,
+    images: ['/og-image.png'],
   },
 };
 
@@ -50,6 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en-US">
       <body className="flex min-h-screen flex-col antialiased">
+        <SiteStructuredData />
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>

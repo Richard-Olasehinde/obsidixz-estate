@@ -119,4 +119,136 @@ host, which is the only place it can be set correctly.
 
 ---
 
-_Stage 2 onward: entries are appended as each stage completes._
+---
+
+## Stage 2 — Homepage
+
+### D9. Section order follows the brief exactly; no extra "features" grid
+
+**Decision:** Hero → introduction → research challenge → service introduction → what you receive
+→ who we serve → process → approach → enquiry CTA.
+
+**Why:** The brief fixes nine sections. A logo wall, statistics strip or testimonial carousel
+would improve visual rhythm but every such element would have to be fabricated. Rhythm comes from
+alternating tones (`white` / `mist` / `ink`) and the geometric motifs instead.
+
+### D10. The "challenge" section describes the market, not our achievements
+
+**Decision:** The four challenge points — scattered records, weak search filters, slow
+verification, the cost of unverified lists — are statements about the difficulty of residential
+property research generally.
+
+**Why:** It is the honest way for an emerging business to justify the service. No claim is made
+about Obsidixz's scale, coverage, technology or results.
+
+### D11. Copy states what the service is *not*, inside the service section
+
+**Decision:** The service-introduction block includes an explicit "what the service is not"
+panel: not a brokerage or agency, does not sell or manage property, no investment advice, no
+wholesaling.
+
+**Why:** A visitor arriving from a search for "property leads" may assume brokerage. Correcting
+the assumption next to the service description is more effective — and more honest — than a
+footnote.
+
+### D12. Hero includes a "service at a glance" panel
+
+**Decision:** A bordered, semi-transparent panel lists service, coverage, method, deliverable and
+prepared-for. Coverage reads "Selected US markets, agreed per brief".
+
+**Why:** It answers the four questions a commercial visitor has within the first screen, without
+inventing a statistic or a package. "Selected markets, agreed per brief" is true and avoids an
+unconfirmed nationwide-coverage claim.
+
+### D13. Standard Unsplash images were rejected; two purpose-made photographs are used
+
+**Decision:** Image search returned mostly mid-resolution, watermarked or poorly-licensed stock
+(Getty/Alamy/Pinterest). Instead, two photographs were produced for this project
+(`public/images/hero-neighbourhood.jpg`, `research-desk.jpg`) and are used under the project's own
+ownership. One verified Unsplash aerial (`--X_GwzO73r4`, Unsplash License) was also reviewed as a
+fallback.
+
+**Why:** A commercial website must not ship watermarked or unlicensed imagery. The generated
+images are on-brief (real housing stock; a research desk with an illegible schedule — no fake
+dashboard, no readable fabricated data), contain no logos or identifiable clients, and carry no
+third-party licensing obligation. Provenance is recorded in `ASSETS_PENDING.md`.
+
+**Trade-off, stated plainly:** stock photography of a genuine US neighbourhood would be more
+authentic than a generated image. The generated hero reads as a plausible US suburb and is
+captioned as illustrative; if the founder supplies licensed photography of a real market, replace
+the file and update the alt text.
+
+### D14. Images are illustrative and labelled as such
+
+**Decision:** The hero image carries descriptive alt text with no business claim, and the desk
+image has a visible caption ending "Illustrative image."
+
+**Why:** The images must not imply that a pictured property is a client property or a live
+listing. The caption removes that ambiguity where a visitor might infer it.
+
+### D15. `src/lib/content.ts` holds list-heavy copy as typed data
+
+**Decision:** Deliverable fields, the five process steps, audience scenarios, challenge points
+and approach principles live in one typed module rather than inline in JSX.
+
+**Why:** The same content is reused on Home, Services, How It Works and Who We Serve. One source
+means the five-step process cannot drift between pages, and a future editor can change wording
+without touching layout code.
+
+### D16. Navigation and hero breakpoints moved from `lg` to `xl`
+
+**Decision:** Desktop navigation appears at ≥1280 px; the hero becomes two-column at ≥1280 px.
+
+**Why:** At 1024 px the six nav items plus the CTA need roughly 810–900 px inside a 960 px
+content width — workable only with cramped spacing, and fragile once labels grow. The hero had a
+related hazard: at `lg`, the headline column is ~470 px while the display type was still sized
+for a full-width column, producing overflow before the 1280 px clamp ceiling. Moving both to `xl`
+and lowering the display clamp removes the whole class of defect rather than tuning one width.
+
+### D17. A verification suite was written in Stage 2 rather than Stage 7
+
+**Decision:** `scripts/smoke-test.mjs` (route, metadata, heading, link, asset, content-claim,
+JSON-LD, robots/sitemap, security-header and enquiry-API checks) was written when the homepage
+landed.
+
+**Why:** Each later stage adds pages and behaviour; having the checker in place means Stage 3's
+six pages and Stage 4's form are verified as they are built, instead of discovering an
+accumulated set of defects at Stage 7 when causes are harder to trace. The stage order required by
+the brief is preserved — Stage 7 still runs the complete suite and reports on it.
+
+### D18. Route registry drives the sitemap *and* the tests
+
+**Decision:** `src/lib/routes.ts` is the single list of public routes; `app/sitemap.ts` and the
+smoke test both read it.
+
+**Why:** A page cannot exist without appearing in the sitemap, and cannot appear in the sitemap
+without being tested. Two classes of omission are prevented by construction.
+
+### D19. Structured data limited to `Organization` + `WebSite`
+
+**Decision:** JSON-LD omits `address`, `telephone`, `foundingDate`, `numberOfEmployees`,
+`aggregateRating` and `review`. `areaServed` states the United States as the market served.
+
+**Why:** Richer results are not worth fabricating a location. `areaServed` is a market statement,
+not a claim about an office, and is accurate for a business serving US clients remotely. The smoke
+test asserts that address, telephone and rating fields never appear.
+
+### D20. No browser available; visual verification is manual and documented
+
+**Decision:** Where a check could not be performed, it is reported as not performed rather than
+claimed. Rendering was assessed by inspecting the emitted CSS and computing widths per
+breakpoint.
+
+**Why:** Chromium cannot be installed in this environment (no `libnss3`, no reachable package
+index, no CDN for browser binaries). Claiming visual verification would be a false test report.
+The founder-facing width list and the checks to perform are in `DEVELOPMENT_STATUS.md`.
+
+### D21. The forbiddden-claim checker understands explicit negation
+
+**Decision:** The "no wholesaling" rule fires only when the word appears *without* a preceding
+negation within the same sentence.
+
+**Why:** The site states "we do not advertise wholesaling", which is correct and required. A
+naive keyword ban made the checker report the correct sentence as a violation; the check now
+distinguishes advertising the service from disclaiming it.
+

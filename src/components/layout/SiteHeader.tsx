@@ -60,7 +60,7 @@ export function SiteHeader() {
           </Link>
 
           {/* Desktop navigation */}
-          <nav aria-label="Primary" className="hidden lg:block">
+          <nav aria-label="Primary" className="hidden xl:block">
             <ul className="flex items-center gap-7">
               {primaryNav.map((item) => (
                 <li key={item.href}>
@@ -88,7 +88,7 @@ export function SiteHeader() {
             </ul>
           </nav>
 
-          <div className="hidden lg:block">
+          <div className="hidden xl:block">
             <ButtonLink href="/contact" variant="primary" size="md">
               Discuss Your Requirements
             </ButtonLink>
@@ -97,7 +97,7 @@ export function SiteHeader() {
           {/* Mobile toggle */}
           <button
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center border border-charcoal/15 text-ink transition-colors hover:border-royal hover:text-royal lg:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center border border-charcoal/15 text-ink transition-colors hover:border-royal hover:text-royal xl:hidden"
             aria-expanded={open}
             aria-controls="mobile-nav"
             aria-label={open ? 'Close menu' : 'Open menu'}
@@ -130,7 +130,7 @@ export function SiteHeader() {
       <div
         id="mobile-nav"
         hidden={!open}
-        className="absolute inset-x-0 top-full max-h-[calc(100vh-4.5rem)] overflow-y-auto border-b border-charcoal/10 bg-white shadow-lg lg:hidden"
+        className="absolute inset-x-0 top-full max-h-[calc(100vh-4.5rem)] overflow-y-auto border-b border-charcoal/10 bg-white shadow-lg xl:hidden"
       >
         <Container>
           <nav aria-label="Primary mobile" className="py-4">

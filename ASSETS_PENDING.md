@@ -78,16 +78,34 @@ transaction — none of those exist or could be represented.
 Images are served from `public/images/` through `next/image`, so they are optimised and
 responsive. Alt text on every image describes the scene, not a business claim.
 
-### Image credits
+### Provenance
 
-Files are sourced from **Unsplash** under the [Unsplash
-License](https://unsplash.com/license), which permits free commercial use without attribution
-(attribution appreciated, not required). Provenance is recorded here so the licensing position
-remains answerable.
+| File | Subject | Origin | Licensing position |
+| --- | --- | --- | --- |
+| `public/images/hero-neighbourhood.jpg` | Elevated view of an established US suburban residential neighbourhood | Produced for this project | Owned by the project. No third-party licence, no attribution obligation. |
+| `public/images/research-desk.jpg` | Printed property schedule, notebook, pen and coffee on a desk | Produced for this project | Owned by the project. No third-party licence, no attribution obligation. |
 
-| File | Subject | Source |
+Both images are **illustrative**. Neither depicts a client property, a live listing, an Obsidixz
+office or a real research deliverable. The printed schedule in the desk image is intentionally
+illegible so that no fabricated data is presented as real. Alt text and the visible caption state
+this.
+
+### Why generated rather than stock
+
+Image search returned almost entirely watermarked agency previews (Getty, Alamy), Pinterest
+repins, or images too small for a full-bleed hero. Shipping unlicensed or watermarked photography
+on a commercial site is a legal risk, so the two images were produced for this project instead.
+
+**If the founder would prefer licensed photography of a real US market**, that is a genuine
+improvement in authenticity. Replace the two files at the same paths (1408×768, JPEG, quality
+~82) and update `alt` text in `src/components/sections/HomeHero.tsx` and `src/app/page.tsx`.
+Record the licence and the photographer here.
+
+### Reviewed but not used
+
+| Candidate | Source | Status |
 | --- | --- | --- |
-| *(populated in Stage 2 when images are added)* | | |
+| Aerial suburban neighbourhood, `--X_GwzO73r4` | Unsplash (Unsplash License) | 3000×1759, authentic. A viable alternative for the hero if licensed stock is preferred over a generated image. Not used because the generated image grades better under the dark brand gradient. |
 
 ---
 
