@@ -81,7 +81,7 @@ export default function ServicesPage() {
           eyebrow="How the work runs"
           title={<span id="process-heading">From your brief to the finished research</span>}
         />
-        <ol className="mt-10 grid gap-px border border-charcoal/10 bg-charcoal/10 sm:grid-cols-2 lg:grid-cols-5">
+        <ol className="mt-10 grid gap-px border border-charcoal/10 bg-charcoal/10 sm:grid-cols-2 xl:grid-cols-5">
           {[
             { title: 'You provide requirements', body: 'Target location, property type, size and the criteria that matter.' },
             { title: 'Prospects are researched', body: 'Potential matches are identified and researched individually, by hand.' },

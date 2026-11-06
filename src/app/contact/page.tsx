@@ -184,7 +184,7 @@ export default function ContactPage() {
             title={<span id="next-heading">What happens next</span>}
             intro="No chatbot, no automated sequence. A person reads the enquiry and replies."
           />
-          <ol className="mt-10 grid gap-px border border-charcoal/10 bg-charcoal/10 sm:grid-cols-3">
+          <ol className="mt-10 grid gap-px border border-charcoal/10 bg-charcoal/10 md:grid-cols-3">
             {[
               {
                 title: 'We read it properly',

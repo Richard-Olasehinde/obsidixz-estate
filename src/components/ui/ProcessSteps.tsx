@@ -68,7 +68,7 @@ export function ProcessSteps({ variant = 'full', tone = 'light', limit }: Proces
   const isDark = tone === 'dark';
 
   return (
-    <ol className="grid gap-px border border-charcoal/10 bg-charcoal/10 sm:grid-cols-2 lg:grid-cols-5">
+    <ol className="grid gap-px border border-charcoal/10 bg-charcoal/10 sm:grid-cols-2 xl:grid-cols-5">
       {steps.map((step) => (
         <li
           key={step.step}

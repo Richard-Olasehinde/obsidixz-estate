@@ -1,22 +1,22 @@
 # DEVELOPMENT STATUS
 
-Last updated: **2026-11-06** — after Stage 2.
+Last updated: **2026-11-06** — after Stage 5.
 
 ---
 
 ## Current stage
 
-**Stage 2 — Homepage.** Complete and committed. Work then proceeds to Stage 3.
+**Stage 5 — Responsive implementation.** Complete and committed. Work then proceeds to Stage 6.
 
 ## Stage register
 
 | # | Stage | Status | Commit |
 | --- | --- | --- | --- |
 | 1 | Repository inspection, foundation, design system | ✅ Complete | `f0994f4` |
-| 2 | Homepage | ✅ Complete | `feat: build Obsidixz Real Estate homepage` |
-| 3 | Remaining core pages | ⬜ Not started | — |
-| 4 | Navigation and functionality | ⬜ Not started | — |
-| 5 | Responsive implementation | ⬜ Not started | — |
+| 2 | Homepage | ✅ Complete | `7798dc6` |
+| 3 | Remaining core pages | ✅ Complete | `6455ffd` |
+| 4 | Navigation and functionality | ✅ Complete | `42e9572` |
+| 5 | Responsive implementation | ✅ Complete | `style: complete responsive website implementation` |
 | 6 | SEO and metadata | ⬜ Not started | — |
 | 7 | Testing and corrections | ⬜ Not started | — |
 | 8 | Deployment preparation | ⬜ Not started | — |
@@ -149,6 +149,81 @@ browser engine (`chromium` cannot be launched: missing `libnss3`, and the sandbo
 index or CDN access for it). Layout correctness was assessed by reading the emitted CSS and doing
 the arithmetic for each breakpoint. The founder should confirm visually in a browser — see
 Stage 5 for the width list.
+
+---
+
+## Stage 5 — Responsive implementation
+
+### Method
+
+No browser engine is available in this environment, so responsive correctness was established
+by **measurement rather than by eye**: `scripts/check-layout-metrics.mjs` reads the real
+Montserrat and Open Sans advance widths (the same files the site serves, cut to static
+instances in `scripts/fonts/`) and proves that the widest word in every multi-column cell fits
+the narrowest column that breakpoint produces. This is the defect class that actually causes
+horizontal scrolling on a site like this — a single long word forcing a grid wider than its
+container.
+
+### Defects found and corrected
+
+| Where | Defect (measured) | Correction |
+| --- | --- | --- |
+| `ProcessSteps` (used on Home, How It Works, Services) | At 1024 px the 5-column grid gives a 192 px cell → 144 px content box. "requirements" in Montserrat 600 at 23.2 px needs **163 px** → overflow pushing the last two steps outside the container. | `sm:grid-cols-2 xl:grid-cols-5`. At 1024 the grid is 2-up (432 px cells). |
+| `services/page.tsx` process strip | Same 5-column defect at 1024 px. | `sm:grid-cols-2 xl:grid-cols-5`. |
+| `contact/page.tsx` next-steps | 3 columns from 640 px → 186 px cells, too tight for the body copy at that width. | 3 columns from `md` (768 px). |
+| All multi-column grids | Not previously measured. | Now covered by 26 assertions at 360 / 390 / 640 / 768 / 1024 / 1280 / 1440 px. |
+
+### Verified safe
+
+| Element | Worst case | Result |
+| --- | --- | --- |
+| Hero headline "Smarter Research." | 315 px at 360 px (320 px available) | Fits — 15 px headroom |
+| Hero headline at 1440 px | 550 px in a 696 px column at 60 px type | Fits |
+| Header logo + 6 nav items + CTA | 1049 px of 1216 px at every width ≥1280 | Fits |
+| Buttons at 360 px | "Discuss Your Requirements" 267 px of 320 px | Fits |
+| Longest body words | "acknowledgement" 151 px of 320 px | Fits |
+| Legal page headings at 360 px | Longest single word "jurisdiction" 128 px | Fits, wraps naturally |
+
+### Responsive behaviour by width
+
+| Width | Layout |
+| --- | --- |
+| 360–389 px | Single column throughout. Header collapses to logo + menu button. Hero panel stacks under the headline. Buttons full width. Form single column. |
+| 390–639 px | Same as 360, more breathing room. Hero type scales with `clamp()`, unchanged layout. |
+| 640–767 px | Process steps 2-up. Service scope 2-up. Not-for list 2-up. Header still collapsed. Footer becomes 3-column at `lg`. |
+| 768–1023 px | 3-up card rows begin. Contact sidebar still stacks below the form. |
+| 1024–1279 px | Sidebar layouts engage (`lg`). Process steps remain 2-up. **Desktop nav still collapsed** — deliberate, because six nav items plus the CTA need ~810 px of a 960 px content width. |
+| 1280–1439 px | Full desktop navigation. Five-across process steps. Hero becomes two-column. |
+| 1440 px+ | Content caps at 1216 px (`max-w-[76rem]`); type caps at its clamp ceiling. |
+
+### Navigation and touch
+
+- Mobile panel is a disclosure below the header with `aria-expanded` / `aria-controls`, closes on
+  link click and on `Escape`, and locks body scroll while open.
+- All interactive targets are at least 44 px tall (menu button 44×44, buttons `py-3`/`py-3.5`,
+  inputs `py-2.5` plus label).
+- Form controls are full width on mobile; the message field is `resize-y` so it cannot be
+  dragged wider than the viewport.
+
+### Overflow protection
+
+`body { overflow-x: hidden }` is set as a final guard, but the underlying causes were fixed
+rather than masked: no fixed pixel width over 360 px exists in any component, all grids are
+either single-column or measured to fit, and no text uses `whitespace-nowrap`.
+
+### Tests run in Stage 5
+
+| Test | Result |
+| --- | --- |
+| `npm run layout` (26 geometric assertions) | ✅ 26/26 pass |
+| `npm run typecheck` / `npm run lint` / `npm run build` | ✅ Pass |
+| Static scan for fixed widths, `whitespace-nowrap`, unprefixed multi-column grids | ✅ Clean on all eight routes |
+| Emitted CSS review | ✅ Only Tailwind's own breakpoints (40/48/64/80rem) and no fixed widths above 4 px |
+
+**Not performed:** pixel rendering in a real browser. The measurement approach proves text
+geometry; it cannot see image cropping, colour rendering or scrollbar behaviour. The founder
+should confirm the widths above in a browser — this remains listed as an open verification item
+in Stage 7.
 
 ---
 
