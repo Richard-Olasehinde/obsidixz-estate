@@ -81,13 +81,53 @@ at §5.
 
 ---
 
+## 1a. RESULT — Brevo accepted the domain (2026-11-06)
+
+The question §4 said only a real attempt could answer has now been answered.
+
+**Brevo accepted `send.realestate.obsidixz.pp.ua` into the account.** The Add Domain wizard passed
+step 1 ("Domain") with a checkmark, on the free plan, with no payment details and no support
+contact. The `.pp.ua` free public suffix did not block it.
+
+**Precise scope of this result**, because the distinction matters:
+
+| | Status |
+| --- | --- |
+| Domain accepted into the Brevo account | ✅ **Confirmed** |
+| Free plan sufficient to reach this step | ✅ **Confirmed** — no paid feature was required |
+| DNS records generated | ⬜ Not yet inspected |
+| Domain authenticated (records live and verified) | ⬜ **Pending** — this is when acceptance becomes real |
+| A message delivered to the Outlook inbox | ⬜ **Pending** — the only test that settles §1.2 |
+
+So: Brevo's *account-level* policy allows a free public suffix. Whether a message from that suffix
+reaches Outlook is still open, and §5 remains the plan.
+
+**Consequence for §2.1:** row 1 moves from **[UNKNOWN]** to **[MEASURED] — accepted**. Row 2
+(requires a conventional paid domain) is answered **No**. Rows 3–6 stand.
+
+**Consequence for the fallback:** Zoho ZeptoMail is no longer needed as the immediate next step,
+and its unresolved credit-validity conflict no longer blocks anything.
+
+### Also confirmed in the wizard
+
+Brevo's step 2 offers a **"branded subdomain"**, which it describes as making "your emails use your
+own domain for **links** instead of Brevo's". That is click/open **tracking**, not sending. This
+project does not use tracking, and the notification email contains no links, so the step is
+skipped. Accepting it would add CNAME records for no benefit, and the resulting host would have
+been `send.send.realestate.obsidixz.pp.ua`.
+
+The **sending** domain is the one added in step 1 — `send.realestate.obsidixz.pp.ua` — which means
+the From address will read `enquiries@send.realestate.obsidixz.pp.ua`, exactly as planned.
+
+---
+
 ## 2. Provider-by-provider findings
 
 ### 2.1 Brevo
 
 | # | Question | Finding |
 | --- | --- | --- |
-| 1 | Accepts our domain? | **[UNKNOWN]** No published TLD blocklist found. Their "free domain" language **[DOC]** refers to *free email services* (Gmail, Yahoo), not free public suffixes ([help article](https://help.brevo.com/hc/en-us/articles/17286219877778-FAQs-About-domain-authentication-Brevo-code-DKIM-DMARC)). Notably `pp.ua` is not a webmail provider — it is a registrable domain you control. **Ambiguous, therefore must be asked.** |
+| 1 | Accepts our domain? | **✅ [MEASURED] ACCEPTED.** `send.realestate.obsidixz.pp.ua` was added on the free plan with no payment and no support contact — see §1a. Their "free domain" language **[DOC]** refers to *free email services* (Gmail, Yahoo), not free public suffixes ([help article](https://help.brevo.com/hc/en-us/articles/17286219877778-FAQs-About-domain-authentication-Brevo-code-DKIM-DMARC)). Notably `pp.ua` is not a webmail provider — it is a registrable domain you control. **Ambiguous, therefore must be asked.** |
 | 2 | Requires a conventional paid domain? | **[DOC]** "You can only authenticate a domain that you or your business owns and controls." `obsidixz.pp.ua` is owned and controlled, with a live Zoho MX on record. No purchase implied. |
 | 3 | Free tier sufficient? | **[DOC]** 300 emails/day, no card. Far above need. **Free-plan emails carry a small Brevo footer** — for an internal notification that is cosmetic, not functional. |
 | 4 | API fits our adapter? | **[DOC]** REST API v3 on every plan. One `POST`, JSON body, `api-key` header. Fits `deliverEnquiry()` with a new mode; no architectural change. |
