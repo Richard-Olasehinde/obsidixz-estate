@@ -200,10 +200,26 @@ Therefore:
 
 This is tracked as **BLK-01** and stays open until that manual confirmation happens.
 
+### 5.2a Ignore Resend's onboarding `onboarding@resend.dev`
+
+After signup, Resend opens a "Send your first email" onboarding screen that suggests sending from
+`onboarding@resend.dev`. **Do not use it.**
+
+- It is Resend's shared test domain and will only deliver to the address on your own account.
+- The `From:` would read `onboarding@resend.dev`, which is unprofessional for a business enquiry
+  and would be a false claim about who sent it.
+- It would make the form *appear* to work while `ENQUIRY_FROM_EMAIL` was pointing at a domain the
+  business does not control.
+
+Click **Domains** in the left sidebar and start there instead. The domain must be verified before
+the API key is useful, and verification is the part that takes time.
+
 ### 5.3 Account and domain setup
 
 1. **Create a Resend account** at `resend.com` using the business address
-   `obsidixz.realestate@outlook.com`.
+   `obsidixz.realestate@outlook.com`. The free plan is sufficient: 3,000 emails/month, 100/day,
+   3 domains. Sending pauses at the cap rather than charging — and the form would report failure
+   honestly rather than faking success.
 2. **Add the domain.** In Resend's *Add Domain* field, enter the **base domain**
    `realestate.obsidixz.pp.ua` — **not** `send.realestate.obsidixz.pp.ua`.
 
