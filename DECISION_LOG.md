@@ -252,3 +252,265 @@ negation within the same sentence.
 naive keyword ban made the checker report the correct sentence as a violation; the check now
 distinguishes advertising the service from disclaiming it.
 
+
+---
+
+## Stage 3 — Remaining pages
+
+### D22. Legal pages generated from structured data with visible review markers
+
+**Decision:** Privacy and Terms content lives in `src/lib/legal.ts` as typed sections. Unresolved
+fields render as a visibly marked `PendingBlock` — a gold dashed box reading "To be confirmed
+before publication" with a plain-language explanation of what is missing — not as
+plausible-looking invented copy.
+
+**Why:** The requirement is explicit that no legal fact may be invented and that the founder must
+be able to see exactly what needs review. A dashed, labelled component cannot be mistaken for
+final text. The markers double as a work queue: each maps to an ID in the legal review register.
+
+### D23. Terms carry an explicit "not a substitute for a service agreement" clause
+
+**Decision:** Section 1 of the Terms states plainly that the website terms are not a customer
+service agreement, and that any engagement is governed by separate written terms.
+
+**Why:** A research service sold from a brochure site risks implying a contractual promise it has
+not made. Required by the brief, and it protects the business.
+
+### D24. "Who We Serve" keeps investors primary by order, size and content
+
+**Decision:** Residential investors get the first, larger treatment with four concrete scenarios;
+acquisition operators get a smaller secondary block. A paragraph states the business is not
+positioned as equally focused on every property profession, followed by a "who this is not for"
+list.
+
+**Why:** The brief requires the primary audience to stay primary throughout the site. Making the
+hierarchy explicit stops the page reading as "we serve everyone".
+
+### D25. The not-offered list is a feature, not a disclaimer
+
+**Decision:** `/services` lists eight services the business does not provide; `/who-we-serve` has a
+six-item "not for you" list.
+
+**Why:** For an emerging business an explicit boundary is more credible than a broad claim, and it
+prevents wasted enquiries on both sides. These lists needed a `data-claim-exempt` marker so the
+automated claim checker stopped reading "Wholesaling" in a list of things we do *not* do as
+advertising it.
+
+---
+
+## Stage 4 — Navigation and enquiry functionality
+
+### D26. One validator, used by both the browser and the server
+
+**Decision:** The form and the route handler call the same module; the server always re-validates.
+
+**Why:** Prevents the classic drift bug where the two disagree, and guarantees an invalid payload
+cannot reach delivery even if the client is bypassed.
+
+### D27. Delivery is an adapter with an honest `unconfigured` state
+
+**Decision:** `deliverEnquiry()` supports `webhook`, `console` (development only) and
+`unconfigured`. With no configuration the route returns **503** `delivery_not_configured`, and the
+form says submission is unavailable and keeps the visitor's text in place.
+
+**Why:** The single most important behavioural property of this site: an enquiry is either
+genuinely accepted or the visitor is told the truth and offered another route.
+
+### D28. Custom `fetch` adapter rather than a vendor SDK
+
+**Decision:** A plain JSON `POST` to `ENQUIRY_WEBHOOK_URL` with `AbortSignal.timeout` and a strict
+`response.ok` check. Success is defined only as 2xx.
+
+**Why:** Works with Formspree, Formspark, Make, Zapier, n8n, a serverless function or any CRM. No
+vendor lock-in, no dependency, no key in the browser bundle.
+
+### D29. Spam protection: layered, without a third-party CAPTCHA
+
+**Decision:** hidden honeypot, submit-timing check (rejecting under three seconds), per-IP rate
+limiting at five per hour by default, length limits and newline rejection on single-line fields.
+
+**Why:** A CAPTCHA would add a third-party processor to the privacy policy and hurt conversion on a
+low-traffic eight-page site. These layers stop most automated submissions. The limitation —
+per-instance, resets on redeploy, not bot-proof — is documented rather than glossed over, and the
+adapter boundary is where a CAPTCHA would go if abuse appears.
+
+### D30. Duplicate protection: client-side window plus the server rate limiter
+
+**Decision:** The submit button is disabled in flight and an identical payload cannot be resent for
+60 seconds. There is no server-side idempotency store.
+
+**Why:** Server-side de-duplication needs persistent storage, which the brief says not to add
+without a genuine requirement. The honest description is: double-clicking cannot send twice, a
+deliberate resubmit will.
+
+### D31. Sanitisation neutralises injection without HTML-escaping
+
+**Decision:** `src/lib/sanitise.ts` strips control and zero-width characters, collapses whitespace,
+and prefixes spreadsheet-formula characters (`= + - @`) so a value cannot be read as a formula in
+Excel or Sheets. Values are **not** HTML-escaped.
+
+**Why:** The data is never rendered back as HTML by us — it goes to a JSON API and a plain-text
+email. Escaping on input corrupts legitimate values ("O'Brien") and gives false confidence. The
+correct place to escape is at output, and neither destination renders HTML.
+
+---
+
+## Stage 5 — Responsive implementation
+
+### D32. Responsive correctness proved by font metrics, not by eyeballing
+
+**Decision:** `scripts/check-layout-metrics.mjs` reads the real Montserrat and Open Sans advance
+widths and asserts that the widest word in every multi-column cell fits the narrowest column that
+breakpoint produces — 26 assertions across seven widths.
+
+**Why:** No browser is available in this environment, and "it looks fine" is not a test. On this
+kind of site almost every horizontal-scrolling bug comes from one long word forcing a grid wider
+than its container, which is exactly what metrics prove. It immediately found a real defect: at
+1024 px the five-across process grid left a 144 px content box while "requirements" needs 163 px.
+
+**Trade-off:** metrics cannot see image cropping, colour rendering or scrollbar behaviour. Those
+stay on the founder's manual verification list, recorded as unverified rather than assumed.
+
+### D33. Navigation and hero move to `xl`
+
+**Decision:** Desktop navigation appears at ≥1280 px; the hero becomes two-column there too.
+
+**Why:** Six nav items plus the CTA need ~810–900 px of the 960 px available at 1024 px — workable
+only with cramped spacing and fragile the moment a label grows. The mobile disclosure panel serves
+1024–1279 px well.
+
+---
+
+## Stage 6 — SEO and metadata
+
+### D34. Metadata generated by one helper, never copy-pasted
+
+**Decision:** `buildMetadata()` produces title, description, canonical, Open Graph and Twitter tags
+from a page's title, description and path.
+
+**Why:** Guarantees every page has a distinct absolute canonical and a consistent OG shape, and
+makes a missing description a type error rather than a silent omission.
+
+### D35. Canonical URLs come from configuration, never from the request host
+
+**Decision:** `NEXT_PUBLIC_SITE_URL` is the only source for canonicals and sitemap entries.
+
+**Why:** Preview deployments and `localhost` must never emit canonicals pointing at themselves.
+
+### D36. Structured data: `Organization`, `WebSite` and `BreadcrumbList` only
+
+**Decision:** JSON-LD contains name, url, description, logo, slogan, `areaServed` (the United
+States as a *market*, not an office) and `knowsAbout`. No `address`, `telephone`,
+`LocalBusiness`, `AggregateRating` or `Review`.
+
+**Why:** Inventing an address for richer results is dishonest and a search-quality violation.
+`areaServed` describes the market served, which is true for a business serving US clients
+remotely. The smoke suite asserts those fields never appear.
+
+### D37. Visible breadcrumbs accompany the structured data
+
+**Decision:** `PageHero` renders a breadcrumb trail on every inner page, matching the JSON-LD.
+
+**Why:** Breadcrumb markup without an on-page equivalent is a claim the visitor cannot see. The two
+should always agree, and the smoke test checks both.
+
+---
+
+## Stage 7 — Testing and corrections
+
+The full test matrix is in `DEVELOPMENT_STATUS.md`. Decisions arising from it:
+
+### D38. Zod replaced with a hand-written shared validator
+
+**Decision:** `src/lib/enquiry-schema.ts` exports `validateEnquiry()` and
+`validateEnquiryRequest()` instead of Zod schemas. `zod` was removed from dependencies.
+
+**Why:** The production build showed `/contact` shipping 690 KB of raw JS against 586 KB on every
+other page — the difference was Zod, carried by the browser for a seven-field form. The
+replacement is ~150 lines, typed, dependency-free, and still one source of truth for both the
+browser and the server, which was the property worth keeping.
+
+**Trade-off:** a hand-written validator needs its own tests. The smoke suite covers the server
+reject paths and the a11y suite confirms the form surfaces field errors.
+
+### D39. `gold-deep` added for small text; `gold` reserved for large and decorative use
+
+**Decision:** `--color-gold-deep: #8a5530` wherever gold is small text. The approved `#B47745` is
+retained for display type at 60 px, rules, bullets and motif strokes.
+
+**Why:** `#B47745` measures 3.71:1 on white and 3.31:1 on the gold tint — below AA for normal text.
+`#8a5530` measures 6.14:1 and 5.48:1. The palette is respected: `gold-deep` is a darkened form of
+the approved gold used only where the approved value fails legibility.
+
+### D40. Body text minimum is `charcoal/65`
+
+**Decision:** No text may use `text-charcoal/55` or lighter. Decorative borders may.
+
+**Why:** `/55` on white is 4.09:1 and `/50` on mist is 2.76:1 — both fail AA. `/65` is 5.29:1 on
+white and 4.85:1 on mist, so it passes on every background the site uses.
+
+### D41. Bot-trap responses are never success-shaped
+
+**Decision:** A honeypot hit or an implausibly fast submission returns
+`400 { ok: false, discarded: true }` with no delivery reference.
+
+**Why:** The first implementation returned `200 { ok: true }` to avoid teaching a bot what it had
+tripped. But the API is also consumed by the site's own form, and a success-shaped response for a
+discarded submission is precisely the false-success behaviour this project must not have. A bot
+learns little from a 400; the cost of a visitor ever seeing "sent" for a dropped message is far
+higher than the benefit of confusing an automated client.
+
+### D42. Contact page is dynamic
+
+**Decision:** `export const dynamic = 'force-dynamic'` on `/contact`.
+
+**Why:** The page states whether online enquiries are open — a runtime fact read from environment
+configuration — so it must not be baked in at build time. One dynamic page out of eight is a small
+price for a truthful status.
+
+### D43. Performance harness measures bytes on the wire
+
+**Decision:** `scripts/check-performance.mjs` uses the raw `http`/`https` client and counts
+received bytes rather than `fetch()`, which transparently decompresses.
+
+**Why:** The first version reported 571 KB of "gzipped" JS; the real figure was 181 KB. A gate that
+measures the wrong number is worse than none, because it produces confident wrong answers.
+
+---
+
+## Stage 8 — Deployment preparation
+
+### D44. No `output: 'export'`; the site stays a server deployment
+
+**Decision:** Deployed as a Node server, not a static export.
+
+**Why:** A static export removes `/api/enquiry`, and with it server-side validation, the rate
+limiter and secret-safe delivery. The form would post directly from the browser to a third party,
+handing the destination URL to every visitor and abandoning the property that success is reported
+only when a destination genuinely accepted the submission. Seven of eight pages are still
+prerendered, so the cost is one dynamic route, not an architectural compromise.
+
+### D45. HSTS left to the host
+
+**Decision:** The application does not send `Strict-Transport-Security`.
+
+**Why:** HSTS can only be set correctly by whatever terminates TLS, and only once HTTPS is
+confirmed working. Sending it from the app before the certificate is live would lock visitors out.
+
+### D46. Verification scripts are committed as permanent gates, not scratch files
+
+**Decision:** `smoke-test.mjs`, `check-layout-metrics.mjs`, `check-accessibility.mjs` and
+`check-performance.mjs` live in `scripts/`, are wired to npm scripts, and are documented in README
+and DEPLOYMENT.
+
+**Why:** The founder will change copy, hosting and providers after this conversation ends. The
+checks encode the promises of this build — text fits, contrast passes, claims stay honest, the form
+never lies — so those promises survive an edit made by someone who never read this log.
+
+### D47. Deployment documentation leads with the real blockers
+
+**Decision:** DEPLOYMENT.md opens with a launch checklist naming the three configuration blockers
+and the nine legal review items, rather than a generic build-and-deploy walkthrough.
+
+**Why:** The technical deployment is routine. The reasons this site is not yet launchable are
+entirely non-technical, and burying them under a hosting tutorial would invite a premature launch.

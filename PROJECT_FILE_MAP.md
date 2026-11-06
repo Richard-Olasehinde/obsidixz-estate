@@ -6,10 +6,13 @@ Reference for locating anything in this repository.
 obsidixz-estate/
 ├── src/
 │   ├── app/                    Next.js App Router — every route lives here
-│   ├── components/             Reusable UI
+│   ├── components/             Reusable UI (layout, ui, sections, seo, forms, brand)
 │   └── lib/                    Configuration, content data and validation logic
 ├── public/                     Static files served from the site root
-├── scripts/                    Developer utilities (not part of the build)
+│   ├── images/                 The two illustrative photographs
+│   └── favicon*, og-image.png  Placeholder brand assets (see ASSETS_PENDING.md)
+├── scripts/                    Verification gates and asset generators (not part of the build)
+│   └── fonts/                  Measurement-only font instances
 ├── docs root                   Project documentation (*.md)
 └── configuration files         Root-level
 ```
@@ -41,10 +44,11 @@ obsidixz-estate/
 | Directory | Contents |
 | --- | --- |
 | `layout/` | `Container`, `Section` (tone/spacing wrapper), `SiteHeader`, `SiteFooter` |
-| `ui/` | `Button` (`ButtonLink`, `ButtonAnchor`), `Card`, `Eyebrow`, `SectionHeading`, `Motifs`, `Stat`/list helpers |
+| `ui/` | `Button` (`ButtonLink`, `ButtonAnchor`), `Card`, `Eyebrow`, `SectionHeading`, `Motifs`, `ProcessSteps`, `FieldList` |
 | `brand/` | `LogoLockup` — **the single place** to swap in the approved logo |
-| `sections/` | Page-level composed sections: `CtaBand`, `ProcessSteps`, `FeatureList`, `PageHero`, `LegalPage` |
-| `forms/` | `EnquiryForm` (client component) and its field primitives |
+| `sections/` | `HomeHero`, `PageHero` (with breadcrumb), `CtaBand`, `LegalPage` |
+| `seo/` | `StructuredData` (Organization + WebSite), `BreadcrumbData` (per inner page) |
+| `forms/` | `EnquiryForm` (client component) and `fields.tsx` (labelled field primitives) |
 
 ## `src/lib/`
 
@@ -53,11 +57,11 @@ obsidixz-estate/
 | `site.ts` | Business identity, navigation, contact values from env, pending-detail register |
 | `metadata.ts` | `buildMetadata()` — per-page title/description/canonical/OG/Twitter |
 | `routes.ts` | Single source of truth for public routes (sitemap, smoke test, footer) |
-| `enquiry-schema.ts` | Zod schema shared by the client form and the API route |
+| `enquiry-schema.ts` | **The single validator**, shared by the client form and the API route |
 | `enquiry-delivery.ts` | Delivery adapter: `webhook` / `console` / `unconfigured` |
 | `rate-limit.ts` | In-memory per-IP submission limiter |
 | `sanitise.ts` | Input normalisation used before delivery |
-| `content/` | Page copy as typed data where the page is list-heavy (services, process, audiences) |
+| `content.ts` | Page copy as typed data (deliverable fields, process steps, audiences, principles) |
 | `legal.ts` | Privacy and Terms sections, with typed `pending` markers |
 
 ## `public/`
@@ -66,8 +70,7 @@ obsidixz-estate/
 | --- | --- |
 | `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png` | **Placeholder** icons — replace when the approved logo arrives |
 | `og-image.png` | 1200×630 social card |
-| `images/` | Illustrative photographs, credits in `ASSETS_PENDING.md` |
-| `site.webmanifest` | Optional; `manifest.ts` generates it instead |
+| `images/hero-neighbourhood.jpg`, `images/research-desk.jpg` | Illustrative photographs, credits in `ASSETS_PENDING.md` |
 
 ## `scripts/`
 
@@ -75,7 +78,11 @@ obsidixz-estate/
 | --- | --- |
 | `generate-favicons.mjs` | Regenerates the placeholder favicon PNGs (pure Node, no deps) |
 | `generate-og-image.sh` | Regenerates the social card (needs ImageMagick + fonttools) |
-| `smoke-test.mjs` | Route, SEO, link, asset and enquiry-API verification |
+| `smoke-test.mjs` | **135** checks: routes, metadata, headings, links, assets, forbidden claims, JSON-LD, robots/sitemap, headers, enquiry API |
+| `check-layout-metrics.mjs` | **26** geometric assertions that text fits its column from 360–1440 px |
+| `check-accessibility.mjs` | **30** contrast pairs plus document structure, label and ARIA-reference checks |
+| `check-performance.mjs` | **28** budgets measured on the wire with the raw HTTP client |
+| `fonts/` | Static Montserrat / Open Sans instances used only by the layout check (OFL — see its README) |
 
 ## Configuration files
 
@@ -101,3 +108,41 @@ obsidixz-estate/
 | `DEPLOYMENT.md` | Build, host, domain, verification |
 | `RECOVERY_NOTES.md` | Resume development from a fresh conversation |
 | `ASSETS_PENDING.md` | Missing brand assets and image credits |
+
+
+---
+
+## Routes at a glance
+
+| Route | Type | Rendered |
+| --- | --- | --- |
+| `/` | Static | Prerendered |
+| `/about` | Static | Prerendered |
+| `/services` | Static | Prerendered |
+| `/how-it-works` | Static | Prerendered |
+| `/who-we-serve` | Static | Prerendered |
+| `/contact` | **Dynamic** | Server-rendered per request (reports live delivery status) |
+| `/privacy-policy` | Static | Prerendered |
+| `/terms-of-service` | Static | Prerendered |
+| `/api/enquiry` | API | Node route handler, POST only |
+| `/sitemap.xml` | Generated | From `src/lib/routes.ts` |
+| `/robots.txt` | Generated | `app/robots.ts` |
+| `/manifest.webmanifest` | Generated | `app/manifest.ts` |
+| `/og-image.png` | Static | Social sharing card |
+| 404 | Static | `app/not-found.tsx` |
+
+## Test commands
+
+| Command | Needs a running server | Assertions |
+| --- | --- | --- |
+| `npm run typecheck` | No | TypeScript strict, no errors |
+| `npm run lint` | No | ESLint, Next core-web-vitals + TS |
+| `npm run layout` | No | 26 layout-metric checks |
+| `npm run build` | No | Production build |
+| `npm run a11y` | Yes | 30 contrast pairs + structure + labels + ARIA |
+| `npm run smoke` | Yes | 135 route/SEO/link/asset/claim/API checks |
+| `npm run perf` | Yes (production build) | 28 performance budgets |
+| `npm run check` | No | typecheck + lint + layout + a11y + build |
+
+`npm run a11y` and `npm run smoke` default to `http://localhost:3000`;
+`npm run perf` defaults to `http://localhost:3100`. Override with `SITE_ORIGIN`.

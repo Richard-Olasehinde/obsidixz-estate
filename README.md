@@ -15,9 +15,10 @@ architecture and a configurable enquiry form.
 
 | Item | Status |
 | --- | --- |
-| Current stage | **Stage 8 — Deployment preparation (complete)** |
+| Current stage | **All eight stages complete** — awaiting founder-supplied configuration |
 | Stages complete | 1, 2, 3, 4, 5, 6, 7, 8 |
 | Production build | Passing (`npm run build`) |
+| Verification | 135 route/SEO/API checks, 26 layout checks, 28 performance checks, full a11y pass |
 | Contact form delivery | **Requires founder configuration** — see [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md) |
 | Approved logo asset | **Not supplied** — temporary text lockup in use, see [ASSETS_PENDING.md](./ASSETS_PENDING.md) |
 
@@ -78,8 +79,11 @@ npm run dev
 | `npm run start` | Serve the production build (run `build` first) |
 | `npm run lint` | ESLint (Next.js core-web-vitals + TypeScript rules) |
 | `npm run typecheck` | `tsc --noEmit` |
-| `npm run check` | typecheck + lint + build in one pass |
-| `npm run smoke` | Route/SEO/link/http checks against a running build (see below) |
+| `npm run check` | typecheck + lint + layout metrics + accessibility + build |
+| `npm run layout` | Proves text fits every multi-column cell at 360–1440 px |
+| `npm run a11y` | Contrast, landmarks, labels and ARIA references against a running build |
+| `npm run perf` | Performance budgets against a served production build |
+| `npm run smoke` | Route/SEO/link/asset/claim/API checks against a running build |
 
 ## Testing
 
@@ -87,17 +91,32 @@ There is no unit-test framework in the project. Verification is done with three 
 
 1. **Static checks** — `npm run typecheck` and `npm run lint`.
 2. **Build check** — `npm run build` must complete with no errors.
-3. **Smoke test** — `npm run smoke` crawls the production build and asserts every required
-   route returns HTML, contains its expected title/canonical, has no unresolved placeholder
-   markers, and that internal links resolve. It also exercises the contact API for the
-   reject paths (invalid payload, honeypot, rate limits, unconfigured delivery).
+3. **Behavioural suites** — run against a served build (dev or production):
+
+   - `npm run smoke` — 135 checks: every route returns HTML with a unique title, description and
+     absolute canonical; one `<h1>` per page with no skipped levels; every internal link and
+     in-page anchor resolves; every referenced asset returns 200; no fabricated business claims;
+     JSON-LD parses and contains no invented address; robots and sitemap are correct; security
+     headers are present; and the enquiry API rejects invalid input while never reporting success
+     when delivery is unconfigured.
+   - `npm run layout` — 26 geometric assertions that the widest word in every multi-column cell
+     fits the narrowest column at 360/390/640/768/1024/1280/1440 px, measured with the real font
+     metrics the site serves.
+   - `npm run a11y` — 30 contrast pairs plus document structure, form labels, ARIA references and
+     focus semantics.
+   - `npm run perf` — gzipped JS/HTML/CSS budgets per page, hero image format and size, immutable
+     caching and compression.
 
 ```bash
-npm run build && npm run start &   # serve on :3000
-npm run smoke                      # in another shell
-# or point it at another origin:
-SITE_ORIGIN=http://localhost:3100 npm run smoke
+npm run build
+npm run start &                                    # serve on :3000
+npm run smoke
+npm run a11y
+SITE_ORIGIN=http://localhost:3000 npm run perf
 ```
+
+`npm run check` runs the static gates (types, lint, layout, a11y) plus the build, and is what to
+run before every commit.
 
 Manual checks performed across stages are listed in
 [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md#tests-performed).

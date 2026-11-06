@@ -1,12 +1,13 @@
 # DEVELOPMENT STATUS
 
-Last updated: **2026-11-06** — after Stage 7.
+Last updated: **2026-11-06** — after Stage 8.
 
 ---
 
 ## Current stage
 
-**Stage 7 — Testing and corrections.** Complete and committed. Work then proceeds to Stage 8.
+**Stage 8 — Deployment preparation.** Complete and committed. All eight stages are done; the
+post-Stage-8 audit and handover follow.
 
 ## Stage register
 
@@ -18,10 +19,8 @@ Last updated: **2026-11-06** — after Stage 7.
 | 4 | Navigation and functionality | ✅ Complete | `42e9572` |
 | 5 | Responsive implementation | ✅ Complete | `783794e` |
 | 6 | SEO and metadata | ✅ Complete | `cb5e0cc` |
-| 7 | Testing and corrections | ✅ Complete | `test: verify website functionality and correct defects` |
-| 6 | SEO and metadata | ⬜ Not started | — |
-| 7 | Testing and corrections | ⬜ Not started | — |
-| 8 | Deployment preparation | ⬜ Not started | — |
+| 7 | Testing and corrections | ✅ Complete | `8ec3e56` |
+| 8 | Deployment preparation and docs | ✅ Complete | `docs: prepare deployment and recovery documentation` |
 
 ---
 
@@ -151,6 +150,104 @@ browser engine (`chromium` cannot be launched: missing `libnss3`, and the sandbo
 index or CDN access for it). Layout correctness was assessed by reading the emitted CSS and doing
 the arithmetic for each breakpoint. The founder should confirm visually in a browser — see
 Stage 5 for the width list.
+
+## Stage 3 — Remaining core pages
+
+### Files created
+
+| File | Purpose |
+| --- | --- |
+| `src/app/about/page.tsx` | About Us — honest business stage, operating model, principles |
+| `src/app/services/page.tsx` | Services — the single featured service in detail, plus the not-offered list |
+| `src/app/how-it-works/page.tsx` | How It Works — five-stage process, what is needed from the client |
+| `src/app/who-we-serve/page.tsx` | Who We Serve — investors primary, acquisition operators secondary, exclusions |
+| `src/app/contact/page.tsx` | Contact — form, alternative routes, response expectations |
+| `src/app/privacy-policy/page.tsx` | Privacy Policy rendered from `src/lib/legal.ts` |
+| `src/app/terms-of-service/page.tsx` | Terms of Service rendered from `src/lib/legal.ts` |
+| `src/components/sections/LegalPage.tsx` | Shared legal layout, table of contents, pending-item markers |
+| `src/lib/legal.ts` | Privacy and Terms content with typed unresolved-field markers |
+| `scripts/smoke-test.mjs` | Extended to cover every new route |
+
+### Content constraints applied
+
+- **Property Lead Research is the only service.** It is described as manual,
+  criteria-based research. Nothing implies automated data feeds, live availability or instant
+  delivery.
+- **No invented pricing, delivery windows or minimums.** Every commercial question resolves to
+  "Discuss your requirements" or "Request a research proposal".
+- **Explicit exclusions** appear on `/services` and `/who-we-serve` with a `data-claim-exempt`
+  marker, so stating "we do not offer wholesaling" is not read as advertising it.
+- **Every unresolved legal fact** renders as a visible "to be confirmed" block mapped to the legal
+  review register, not as invented text.
+- **Emerging business stated plainly** on `/about`, with no fabricated years in business, client
+  counts or testimonials.
+
+### Tests run in Stage 3
+
+| Test | Result |
+| --- | --- |
+| `npm run typecheck` / `npm run lint` / `npm run build` | ✅ Pass |
+| All eight routes return 200 | ✅ Verified via HTTP |
+| One `<h1>` per page, no skipped levels | ✅ Verified on all six new routes |
+| Unique title and description per route | ✅ Verified |
+| Canonical equals the sitemap entry on every route | ✅ Verified |
+| Footer links only to the eight permitted routes | ✅ Verified |
+| Forbidden-claim scan across the new copy | ✅ Pass after the `data-claim-exempt` fix |
+| Legal pages contain no invented jurisdiction, registration number, retention period or processor | ✅ Verified by inspection and by the scan |
+
+**Not verified in Stage 3:** final wording of legal sections — that is the founder's legal review,
+tracked as LR-01…LR-09.
+
+---
+
+## Stage 4 — Navigation and enquiry functionality
+
+### Files created
+
+| File | Purpose |
+| --- | --- |
+| `src/lib/enquiry-schema.ts` | The single validator used by both the browser and the server |
+| `src/lib/enquiry-delivery.ts` | Delivery adapter: `webhook` / `console` / `unconfigured` |
+| `src/lib/rate-limit.ts` | In-memory per-IP limiter |
+| `src/lib/sanitise.ts` | Input normalisation |
+| `src/app/api/enquiry/route.ts` | POST handler: validate → reject bots → rate limit → sanitise → deliver |
+| `src/components/forms/EnquiryForm.tsx` | Client form: validation, states, duplicate protection, accessibility |
+| `src/components/forms/fields.tsx` | Labelled field primitives with error wiring |
+| `src/app/contact/page.tsx` | Hosts the form and reports live delivery availability |
+
+### Behaviour
+
+- **Mandatory fields:** full name, business email, enquiry type, requirements/message, privacy
+  acknowledgement. **Optional:** company, target US location.
+- **Client and server validation** from one shared module. The server never trusts the client.
+- **States:** idle → validating → submitting → success / field errors / delivery failure /
+  not configured. The button is disabled in flight.
+- **No false success.** Success is shown only for a 2xx from the destination. An unconfigured
+  deployment returns 503 and the form says so, keeping the visitor's text.
+- **Spam:** honeypot, submit-timing threshold, per-IP rate limit, length and newline limits.
+- **Sanitisation:** control and zero-width characters stripped, whitespace collapsed, spreadsheet
+  formula prefixes neutralised.
+- **Accessibility:** every field labelled, `aria-invalid` and `aria-describedby` on error, errors
+  announced in a live region, focus moved to the first invalid field.
+
+### Tests run in Stage 4
+
+| Test | Result |
+| --- | --- |
+| Valid payload → delivered and 2xx reported | ✅ Verified |
+| Missing required field, bad email, unknown type, oversized message | ✅ Each rejected with a field-specific error |
+| Client-side validation prevents a request | ✅ Verified in rendered markup and by design of the disabled submit path |
+| Honeypot submission rejected | ✅ Verified |
+| Submission under the timing threshold rejected | ✅ Verified |
+| Rate limit triggers on the sixth submission | ✅ Verified |
+| Delivery destination unreachable → honest failure, no success | ✅ Verified against a mock receiver on `:4401` |
+| Destination returns 500 → failure surfaced, not success | ✅ Verified |
+| `console` mode refused when `NODE_ENV=production` | ✅ Verified |
+| Raw HTML in a field cannot break the JSON body | ✅ Verified |
+| Spreadsheet-formula value cannot be interpreted by the destination | ✅ Verified — `=` prefixed |
+
+Rate-limit and duplicate-protection limits are stated in Stage 7 and in `README.md`: they are
+per-instance and in-memory, so they reset on redeploy.
 
 ---
 
@@ -357,6 +454,48 @@ These are listed as open verification items for the founder, not as passes.
 | Contact form delivery unconfigured | Enquiries cannot be submitted online | Founder supplies `ENQUIRY_WEBHOOK_URL` — see ENVIRONMENT_SETUP.md |
 | Legal pages are drafts | Cannot be published as final without review | Marked visibly; register below |
 
+## Stage 8 — Deployment preparation
+
+### Files created
+
+| File | Purpose |
+| --- | --- |
+| `DEPLOYMENT.md` | Build gates, hosting options, environment table, form activation, DNS, 15-point post-deploy checklist, rollback, launch checklist |
+| `RECOVERY_NOTES.md` | Architecture, file map, resume prompt, the seven non-negotiable content rules, rejected approaches |
+
+### Files updated
+
+| File | Change |
+| --- | --- |
+| `README.md` | All stages complete; scripts table; the four behavioural suites explained |
+| `DECISION_LOG.md` | Extended to 47 decisions covering all eight stages |
+| `PROJECT_FILE_MAP.md` | Rewritten for the final tree; route and test-command tables added |
+| `DEVELOPMENT_STATUS.md` | This file — stages 3, 4 and 8 documented, register closed |
+
+### Deployment decisions
+
+| # | Decision | Consequence |
+| --- | --- | --- |
+| D44 | No `output: 'export'` — deploy as a Node server | `/api/enquiry` survives, with server-side validation, rate limiting and secret-safe delivery. Seven of eight pages are still prerendered. |
+| D45 | HSTS is left to the host | Cannot be set correctly before TLS is confirmed working. |
+| D46 | Verification scripts are permanent gates, not scratch files | The build's promises survive edits by someone who has not read the decision log. |
+| D47 | `DEPLOYMENT.md` opens with the real blockers, not a hosting tutorial | The technical deployment is routine; the reasons the site is not launchable are non-technical. |
+
+### Pre-commit verification at Stage 8
+
+| Check | Result |
+| --- | --- |
+| All eight documentation files present | ✅ README, DEVELOPMENT_STATUS, DECISION_LOG, PROJECT_FILE_MAP, ENVIRONMENT_SETUP, DEPLOYMENT, RECOVERY_NOTES, ASSETS_PENDING |
+| No broken relative links between documents | ✅ Verified by script |
+| `.env.example` lists all nine variables with no values | ✅ Verified |
+| `ENVIRONMENT_SETUP.md` documents all six `ENQUIRY_*` variables | ✅ Verified — §2 variable reference |
+| No secrets in the working tree | ✅ Regex scan clean |
+| `npm run check` (typecheck → lint → layout → a11y → build) | ✅ Pass |
+| `npm run smoke` | ✅ 135/135 |
+| `npm run layout` | ✅ 26/26 |
+| `npm run a11y` | ✅ All pass |
+| `npm run perf` against the production build | ✅ 28/28 |
+
 ---
 
 ## Outstanding items register
@@ -418,7 +557,18 @@ panel with a plain-language explanation. None has been filled with a plausible-l
 
 ## Next actions
 
-1. **Stage 2** — build the homepage: hero, introduction, research challenge, service
-   introduction, deliverables, audience, process, approach, enquiry CTA.
-2. Then Stage 3 (remaining six pages plus legal pages), Stage 4 (navigation + form), Stage 5
-   (responsive), Stage 6 (SEO), Stage 7 (testing), Stage 8 (deployment).
+All eight implementation stages are complete. What remains is not development:
+
+1. **Close BLK-01** — create an enquiry destination and set `ENQUIRY_DELIVERY_MODE=webhook` plus
+   `ENQUIRY_WEBHOOK_URL`. Then send one real test enquiry through the browser and confirm arrival.
+   This is the single change that turns the site from "built" into "usable".
+2. **Close BLK-02** — set `NEXT_PUBLIC_BUSINESS_EMAIL` to a monitored mailbox.
+3. **Close BLK-03** — supply the approved logo set (ASSETS_PENDING.md §1).
+4. **Complete the legal review** — LR-01 to LR-09, with a qualified adviser for LR-02, LR-03 and
+   LR-09. Nothing should be published while the gold "to be confirmed" panels remain.
+5. **Deploy** following `DEPLOYMENT.md`, then work through its 15-point post-deploy checklist.
+6. **Perform the manual verification items** listed above — real browser, screen reader,
+   cross-browser, Lighthouse — and record the outcomes here.
+
+Items 1–4 are the launch gate. Item 5 without them would publish a site whose contact form cannot
+accept an enquiry and whose legal pages still contain unresolved markers.
