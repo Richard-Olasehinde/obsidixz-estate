@@ -95,9 +95,42 @@ contact. The `.pp.ua` free public suffix did not block it.
 | --- | --- |
 | Domain accepted into the Brevo account | ✅ **Confirmed** |
 | Free plan sufficient to reach this step | ✅ **Confirmed** — no paid feature was required |
-| DNS records generated | ⬜ Not yet inspected |
-| Domain authenticated (records live and verified) | ⬜ **Pending** — this is when acceptance becomes real |
+| DNS records generated | ✅ **Confirmed** — 4 records, no SPF requested |
+| Domain authenticated (records live and verified) | ✅ **Confirmed** — Brevo reported "Your domain has been authenticated" |
 | A message delivered to the Outlook inbox | ⬜ **Pending** — the only test that settles §1.2 |
+
+### The records Brevo issued, and what they showed
+
+| Type | Name (relative to `obsidixz.pp.ua`) | Purpose |
+| --- | --- | --- |
+| `TXT` | `send.realestate` | `brevo-code:` domain-ownership proof |
+| `CNAME` | `brevo1._domainkey.send.realestate` | DKIM selector 1 |
+| `CNAME` | `brevo2._domainkey.send.realestate` | DKIM selector 2 |
+| `TXT` | `_dmarc.send.realestate` | DMARC reporting for the sending subdomain |
+
+**No SPF record was requested**, confirming Brevo's documentation that "SPF and MX records are not
+required to authenticate a domain". The apex `v=spf1 include:zohomail.com ~all` therefore stays
+exactly as it was, and the Zoho mailbox is unaffected. Every record landed on a **new** name under
+`send.realestate`, so there was no collision surface at all.
+
+DKIM is issued as two CNAMEs pointing at `b1`/`b2.send-realestate-obsidixz-pp-ua.dkim.brevo.com`,
+which themselves CNAME on to `brevo13`/`brevo14.dkim.brevo.com`, where the 400-character public keys
+live. That two-hop chain matters for troubleshooting: a shallow TXT lookup of the intermediate name
+returns NXDOMAIN even when the record is correct.
+
+### Two configuration faults found and corrected during setup
+
+Both were caught by querying DNS directly **before** asking Brevo to verify, which is why
+authentication succeeded on the first attempt rather than failing with a generic "records don't
+match".
+
+1. **CNAME target treated as relative.** uadns appended the zone to a target that lacked a trailing
+   dot, producing `b1.send-realestate-obsidixz-pp-ua.dkim.brevo.com.obsidixz.pp.ua` — a hostname that
+   does not exist. Fixed by terminating the target with a dot.
+2. **`brevo2` was absent entirely.** Added, then verified.
+
+**Lesson recorded:** on uadns, a CNAME target must end with a trailing dot or the zone name is
+appended. This is general to relative-name DNS panels and will recur for any future CNAME.
 
 So: Brevo's *account-level* policy allows a free public suffix. Whether a message from that suffix
 reaches Outlook is still open, and §5 remains the plan.
