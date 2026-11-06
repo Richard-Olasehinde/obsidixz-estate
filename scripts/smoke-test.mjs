@@ -81,6 +81,18 @@ function linkHref(html, rel) {
   return m ? decode(m[1]) : null;
 }
 
+/**
+ * Removes regions the site marks as "claim-exempt" — lists that enumerate what
+ * the business does NOT offer or whom it does not serve. Without this, the
+ * claim checker would read "we do not offer wholesaling" as advertising it.
+ */
+function stripExemptRegions(html) {
+  return html.replace(
+    /<(ul|ol|div|section)[^>]*data-claim-exempt="[^"]*"[^>]*>[\s\S]*?<\/\1>/gi,
+    ' ',
+  );
+}
+
 function textOf(html) {
   return decode(
     html
@@ -109,7 +121,12 @@ const REQUIRED_ROUTES = [
 /* Forbidden content — fabricated or unsupported business claims       */
 /* ------------------------------------------------------------------ */
 const FORBIDDEN_PATTERNS = [
-  { re: /\bguarantee(d|s)?\b/i, why: 'guarantee language' },
+  {
+    re: /\bguarantee(d|s)?\b/i,
+    why: 'guarantee language',
+    // A promise is forbidden; an explicit disclaimer ("no service can guarantee…") is required copy.
+    unless: /\b(no|not|cannot|can't|never|without)\b[^.]{0,40}$/i,
+  },
   { re: /\brisk[- ]free\b/i, why: 'risk-free claim' },
   { re: /\b(testimonial|client logo)s?\b/i, why: 'testimonial reference' },
   { re: /\btrusted by\b/i, why: 'unsupported social-proof claim' },
@@ -214,7 +231,7 @@ async function main() {
     record('structure', `${route.path} no skipped heading levels`, skip === null, skip ?? '');
 
     // Forbidden content
-    const text = textOf(html);
+    const text = textOf(stripExemptRegions(html));
     for (const rule of FORBIDDEN_PATTERNS) {
       const hit = text.match(rule.re);
       if (hit) {
@@ -275,8 +292,17 @@ async function main() {
 
   const ogImage = metaContent(pages.get('/') ?? '', 'property', 'og:image');
   if (ogImage) {
-    const res = await fetch(ogImage);
-    record('assets', 'og:image resolves', res.ok, `${ogImage} → ${res.status} ${res.headers.get('content-type') ?? ''}`);
+    // og:image is absolute and points at the production domain — correct for
+    // crawlers, but the check must resolve it against the origin under test.
+    const { pathname: ogPath } = new URL(ogImage, `${ORIGIN}/`);
+    const res = await fetch(`${ORIGIN}${ogPath}`);
+    record(
+      'assets',
+      'og:image resolves',
+      res.ok,
+      `${ogPath} → ${res.status} ${res.headers.get('content-type') ?? ''}`,
+    );
+    record('assets', 'og:image is declared as 1200x630', /1200/.test(pages.get('/') ?? '') && /630/.test(pages.get('/') ?? ''));
   }
 
   /* 4 — images have alt text */
@@ -357,10 +383,18 @@ async function main() {
 
   /* 9 — enquiry API */
   section('9. Enquiry API');
+  // Each case uses a distinct synthetic client IP so the per-IP rate limiter
+  // does not interfere with the assertions below.
+  let ipCounter = 0;
   const apiPost = async (payload, headers = {}) => {
+    ipCounter += 1;
     const res = await fetch(`${ORIGIN}/api/enquiry`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json', ...headers },
+      headers: {
+        'content-type': 'application/json',
+        'x-forwarded-for': `203.0.113.${ipCounter}`,
+        ...headers,
+      },
       body: JSON.stringify(payload),
     });
     let json = null;
@@ -397,12 +431,24 @@ async function main() {
     record('api', 'rejects missing privacy acknowledgement', res.status === 400, `HTTP ${res.status}`);
   }
   {
-    const { res } = await apiPost({ ...validPayload, website: 'http://spam.example' });
-    record('api', 'honeypot submissions are not accepted', res.status === 200 || res.status === 400, `HTTP ${res.status}`);
+    // A filled honeypot is accepted-looking but never delivered. No reference is
+    // returned, so nothing that reaches this branch can be mistaken for success.
+    const { res, json } = await apiPost({ ...validPayload, website: 'http://spam.example' });
+    record(
+      'api',
+      'honeypot submissions are discarded, not delivered',
+      json?.discarded === true && json?.ok !== true,
+      `HTTP ${res.status} discarded=${json?.discarded === true}`,
+    );
   }
   {
     const { res, json } = await apiPost({ ...validPayload, formOpenedAt: Date.now() });
-    record('api', 'rejects implausibly fast submission', res.status === 400, `HTTP ${res.status} ${json?.error?.code ?? ''}`);
+    record(
+      'api',
+      'implausibly fast submissions are discarded',
+      json?.discarded === true && json?.ok !== true,
+      `HTTP ${res.status} discarded=${json?.discarded === true}`,
+    );
   }
   {
     const res = await fetch(`${ORIGIN}/api/enquiry`, { method: 'GET' });

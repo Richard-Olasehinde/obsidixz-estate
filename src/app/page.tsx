@@ -21,7 +21,7 @@ import {
 export const metadata: Metadata = buildMetadata({
   title: 'Obsidixz Real Estate — US Property Lead Research',
   description:
-    'Obsidixz Real Estate helps US residential real-estate investors identify relevant property prospects through structured, criteria-based research, careful information review and lead generation.',
+    'Obsidixz Real Estate helps US residential real-estate investors identify relevant property prospects through structured, criteria-based research and lead generation.',
   path: '/',
   isHome: true,
   ogTitle: 'Smarter Research. Better Real Estate Opportunities.',

@@ -9,9 +9,13 @@ import { SiteStructuredData } from '@/components/seo/StructuredData';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
+  // `buildMetadata()` in src/lib/metadata.ts produces complete, page-specific
+  // titles (including the site name where appropriate). The template therefore
+  // must not append a suffix, or every inner page would read
+  // "About Us | Obsidixz Real Estate | Obsidixz Real Estate".
   title: {
     default: `${siteConfig.name} — US Property Lead Research`,
-    template: `%s | ${siteConfig.name}`,
+    template: '%s',
   },
   description: siteConfig.description,
   applicationName: siteConfig.name,
