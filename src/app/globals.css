@@ -58,7 +58,26 @@
     line-height: 1.7;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    overflow-x: hidden;
+    /*
+     * No `overflow-x: hidden` here. On a `min-h-screen` sticky-footer layout it makes the body a
+     * scroll container, which breaks `position: sticky` descendants and can clip the focus ring.
+     * Horizontal overflow is prevented at source instead — see the `overflow-wrap` rules below and
+     * `scripts/check-layout-metrics.mjs`, which proves the widest word fits its column.
+     */
+    overflow-wrap: break-word;
+  }
+
+  /* Long unbroken strings (URLs, emails, IDs) must wrap rather than widen their container. */
+  h1,
+  h2,
+  h3,
+  h4,
+  p,
+  li,
+  dd,
+  a {
+    overflow-wrap: anywhere;
+    word-break: normal;
   }
 
   h1,

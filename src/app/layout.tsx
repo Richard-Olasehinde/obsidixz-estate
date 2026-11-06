@@ -63,7 +63,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-US">
-      <body className="flex min-h-screen flex-col antialiased">
+      <body className="flex min-h-svh flex-col antialiased">
         <SiteStructuredData />
         <a href="#main-content" className="skip-link">
           Skip to main content
