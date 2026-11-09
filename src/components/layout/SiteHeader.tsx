@@ -50,7 +50,8 @@ export function SiteHeader() {
       ].join(' ')}
     >
       <Container>
-        <div className="flex h-[4.5rem] items-center justify-between gap-6 lg:h-[5rem]">
+        {/* Keep the full supplied lockup inside the header with visible space below its wordmark. */}
+        <div className="flex h-[5rem] items-center justify-between gap-6 sm:h-[5.75rem] lg:h-[6.5rem]">
           <Link
             href="/"
             aria-label="Obsidixz Real Estate home"

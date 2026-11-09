@@ -21,7 +21,7 @@ export function SiteStructuredData() {
     name: siteConfig.name,
     alternateName: siteConfig.parentOrganisation,
     url: siteConfig.url,
-    logo: `${siteConfig.url}/apple-touch-icon.png`,
+    logo: `${siteConfig.url}/brand/obsidixz-parent-logo-on-light.png`,
     description: siteConfig.description,
     slogan: siteConfig.positioning,
     areaServed: {

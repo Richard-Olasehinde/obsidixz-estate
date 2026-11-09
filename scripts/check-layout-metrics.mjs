@@ -203,6 +203,17 @@ for (const vw of [360, 390, 768, 1024, 1280, 1440]) {
 const LOCKUP_GAP = 6; // gap-1.5
 const LOGO_WIDTH_AT = (vw) => (vw >= 1024 ? 112 : vw >= 640 ? 96 : 80); // w-28 / w-24 / w-20
 const LABEL_SIZE_AT = (vw) => (vw >= 640 ? 14 : 12); // text-sm / text-xs
+const HEADER_HEIGHT_AT = (vw) => (vw >= 1024 ? 104 : vw >= 640 ? 92 : 80); // h-[5rem] sm:h-[5.75rem] lg:h-[6.5rem]
+const LOGO_HEIGHT_AT = (vw) => (LOGO_WIDTH_AT(vw) * 785) / 931; // exact supplied artwork ratio
+
+for (const vw of [320, 640, 768, 1024, 1280]) {
+  const clearance = (HEADER_HEIGHT_AT(vw) - LOGO_HEIGHT_AT(vw)) / 2;
+  check(
+    `full parent-logo lockup has 4px vertical clearance at ${vw}px`,
+    clearance >= 4,
+    `${HEADER_HEIGHT_AT(vw)}px header − ${LOGO_HEIGHT_AT(vw).toFixed(1)}px supplied artwork = ${(clearance * 2).toFixed(1)}px total clearance`,
+  );
+}
 
 for (const vw of [1280, 1440, 1920]) {
   const content = contentWidth(vw);

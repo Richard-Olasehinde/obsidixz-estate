@@ -77,7 +77,7 @@ The repository history and the `README.md` path. Nothing was deleted, renamed or
 | Type check | `npx tsc --noEmit` | ✅ Pass |
 | Lint | `npm run lint` | ✅ Pass (one rule violation found and fixed — see below) |
 | Production build | `npm run build` | ✅ Pass — compiled, prerendered `/` and `/_not-found` |
-| Asset generation | `node scripts/generate-favicons.mjs`, `./scripts/generate-og-image.sh` | ✅ Pass — PNG dimensions verified (32×32, 180×180, 1200×630) |
+| Asset generation | `node scripts/generate-favicons.mjs`, `./scripts/generate-og-image.sh` | ✅ Pass — source-derived browser icon dimensions verified (32×32, 180×180, 1200×630) |
 | Secret check | `git status` review of staged content | ✅ Pass — only `.env.example` contains variable names, no values |
 
 **Defect found and fixed in Stage 1:** the initial `eslint.config.mjs` used `FlatCompat` with
@@ -921,3 +921,23 @@ workflow, and ran the actual scripts with that Node version:
 
 This matches the exact version reported in the Actions stack and resolves the actual failure shown
 in the founder's log screenshot.
+
+---
+
+## Brand polish: navbar clearance and authentic browser icon
+
+Founder confirmed the live site works and requested two finishing changes:
+
+1. More clearance between the supplied OBSIDIXZ wordmark and the bottom of the header. At the
+   approved 112px desktop logo width, the full source ratio yields an approximately 94px-tall
+   lockup; the previous 80px header row left no comfortable lower gap. Row height is now 80px at
+   small widths, 92px at medium widths and 104px at large widths. The original artwork and proportions in the header are
+   untouched.
+2. The browser tab showed the temporary blue/white/gold square favicon, not the supplied identity.
+   The favicon and touch icon now use a proportional crop of the actual symbol from the supplied
+   parent-logo PNG. No icon redraw, recolouring or distortion. URLs are versioned to bypass browser
+   caching. The full parent-logo artwork is still used in structured business data.
+
+Added responsive layout metrics that assert at least 4px vertical clearance around the full supplied
+lockup at 320, 640, 768, 1024 and 1280px. Visual regression still needs the founder's browser check
+after deployment; no browser visual audit was performed in the sandbox.

@@ -21,9 +21,9 @@ export default function manifest(): MetadataRoute.Manifest {
     dir: 'ltr',
     categories: ['business', 'services'],
     icons: [
-      { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' },
-      { src: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
-      { src: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      { src: '/favicon.svg?v=2', sizes: 'any', type: 'image/svg+xml' },
+      { src: '/favicon-32.png?v=2', sizes: '32x32', type: 'image/png' },
+      { src: '/apple-touch-icon.png?v=2', sizes: '180x180', type: 'image/png' },
     ],
   };
 }
