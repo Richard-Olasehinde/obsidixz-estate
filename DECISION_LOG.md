@@ -1004,18 +1004,16 @@ actually inspected continue to use `GET` and read it.
 used in Actions, ran accessibility (all pass) and smoke (138/138) on Node 22.23.4; smoke passed 3
 consecutive runs. This is a test-harness/network-client issue, not a Next.js configuration failure.
 
-### D77. Browser favicon uses the actual supplied parent-logo symbol
+### D77. Browser favicon uses the supplied parent-logo symbol (first implementation; superseded by D79)
 
 **Correction of the temporary D5 placeholder.** The tab icon showed the royal/white/gold geometric
 tile from `scripts/generate-favicons.mjs`, which was not the founder's logo and remained visibly
 wrong after deployment.
 
-**Decision:** replace all three browser/app icon assets with a square favicon/touch icon made from
-a direct crop of the symbol in `public/brand/obsidixz-parent-logo-on-light.png`. The pixels are
-cropped and proportionally downscaled from supplied artwork; the symbol is not redrawn, recoloured,
-rotated, or stretched. The full parent lockup remains unchanged in the site header/footer. The SVG
-favicon embeds the same PNG crop; versioned icon URLs (`?v=2`) avoid a stale browser-cached
-placeholder.
+The first fix used a proportional crop of the symbol from the supplied parent-logo lockup, but
+flattened it onto white. After comparing the result with the existing Forms tab and the standalone
+transparent icon, the founder supplied the intended icon source; **D79 supersedes this initial
+favicon treatment**. The header lockup was and remains unchanged.
 
 ### D78. Give the supplied full logo lockup clearance inside the navigation bar
 
@@ -1027,3 +1025,16 @@ width/aspect ratio. At the old 80px desktop header height, that 112px-wide raste
 large widths so the complete artwork fits with breathing room below the wordmark. A responsive
 layout metric asserts at least 4px vertical clearance at five representative viewport widths. No
 logo scaling, crop, or restyling in the header.
+
+
+### D79. Use the founder-provided transparent symbol for the browser tab
+
+The founder pointed out that the Forms site's browser tab uses the transparent standalone symbol
+from `LOGO 3 transparent.png`. The prior favicon was derived from the parent lockup and flattened
+onto a white square, so its appearance did not match the supplied transparent icon.
+
+**Correction:** the exact provided PNG is now committed as
+`public/brand/obsidixz-parent-symbol-transparent.png`. The favicon generator trims only the excess
+transparent canvas, proportionally downsizes the original artwork, and preserves transparency for
+both favicon and touch icon. No redraw, recolour, rotation or stretch. The SVG embeds that same PNG.
+URLs advance to `?v=3` to bypass the previous icon cache.
