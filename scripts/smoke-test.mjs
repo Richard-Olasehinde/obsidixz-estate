@@ -69,6 +69,10 @@ async function get(path, init) {
     SLASH_ONLY.test(path);
 
   if (isSlashRedirect) {
+    // Consume the small redirect body before opening the follow-up request.
+    // Otherwise newer Node/Undici releases can assert while finalizing the
+    // unread response on a static HTTP/1.0 server.
+    await res.arrayBuffer();
     res = await fetch(`${ORIGIN}${path.endsWith('/') ? path : `${path}/`}`, {
       redirect: 'manual',
       ...init,
@@ -287,7 +291,13 @@ async function main() {
       const [linkPath] = href.split('#');
       if (linkPath.startsWith('/_next/') || linkPath.startsWith('/api/')) continue;
       try {
-        const head = await fetch(`${ORIGIN}${linkPath}`, { method: 'GET', redirect: 'manual' });
+        // We only need to check that the target exists, not download its body.
+        // GET left redirect/error response bodies unread; under Node 22.23.4's
+        // Undici parser, closing such a response can assert in Parser.finish
+        // (`assert(!this.paused)`) and crash the suite. HEAD checks the same
+        // resource status without an unread body. Static hosts, Next and Pages
+        // all support HEAD for published files.
+        const head = await fetch(`${ORIGIN}${linkPath}`, { method: 'HEAD', redirect: 'manual' });
         if (head.status !== 200) brokenLinks.push(`${path} → ${href} (${head.status})`);
       } catch {
         brokenLinks.push(`${path} → ${href} (unreachable)`);
@@ -308,7 +318,9 @@ async function main() {
   for (const p of ['/favicon.svg', '/favicon-32.png', '/apple-touch-icon.png', '/og-image.png']) assetPaths.add(p);
   const missingAssets = [];
   for (const asset of assetPaths) {
-    const res = await fetch(`${ORIGIN}${asset}`);
+    // Status-only probe: HEAD avoids downloading assets and leaves no response
+    // body unread for Node's Undici parser to finalize.
+    const res = await fetch(`${ORIGIN}${asset}`, { method: 'HEAD' });
     if (!res.ok) missingAssets.push(`${asset} (${res.status})`);
   }
   record('assets', `all ${assetPaths.size} referenced assets return 200`, missingAssets.length === 0, missingAssets.join('; '));
@@ -318,7 +330,7 @@ async function main() {
     // og:image is absolute and points at the production domain — correct for
     // crawlers, but the check must resolve it against the origin under test.
     const { pathname: ogPath } = new URL(ogImage, `${ORIGIN}/`);
-    const res = await fetch(`${ORIGIN}${ogPath}`);
+    const res = await fetch(`${ORIGIN}${ogPath}`, { method: 'HEAD' });
     record(
       'assets',
       'og:image resolves',
@@ -460,7 +472,7 @@ async function main() {
   /* 7 — security headers */
   section('7. Security headers');
   {
-    const res = await fetch(`${ORIGIN}/`);
+    const res = await fetch(`${ORIGIN}/`, { method: 'HEAD' });
     for (const header of ['x-content-type-options', 'referrer-policy', 'permissions-policy']) {
       /**
        * Response headers belong to the HOST, not the build. A static export has
@@ -558,10 +570,10 @@ async function main() {
     );
 
     /* Obsolete integration must be gone. */
-    const { res: gone } = await fetch(`${ORIGIN}/api/enquiry`, { method: 'POST' }).then(
-      async (res) => ({ res }),
-      () => ({ res: { status: 0 } }),
-    );
+    const gone = await fetch(`${ORIGIN}/api/enquiry`, { method: 'POST' }).catch(() => null);
+    // The server's unsupported-POST response has a body; consume it before the
+    // next request so the connection is fully drained under Node 22.23+.
+    if (gone) await gone.arrayBuffer();
     /**
      * Any non-success proves the endpoint is gone, and different hosts say so
      * differently: a Next server returns 404, a bare static file server returns

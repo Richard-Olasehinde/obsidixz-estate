@@ -985,3 +985,21 @@ checking the files actually destined for GitHub Pages.
 
 **Correction recorded:** a prior status read `tail`'s zero exit through a shell pipeline and
 incorrectly stated `a11y` exits zero when no server is available. Direct test confirms it exits 1.
+
+### D76. Smoke-test status probes do not download or abandon response bodies
+
+The failed Actions log identified Node 22.23.4's Undici HTTP parser, not a Next.js build error. The
+static export built, then `smoke-test.mjs` crashed in its internal-link section with
+`AssertionError: assert(!this.paused)`.
+
+**Root cause:** the suite used `GET` merely to check resource status, did not consume the bodies of
+internal-link/local-asset responses, and followed trailing-slash redirects without draining their
+small response bodies. Node 22.23.4 could assert while finalizing those sockets.
+
+**Decision:** use `HEAD` for status-only probes (links, assets, OG image, response headers); consume
+redirect bodies before following them; drain the unsupported-POST response. Requests whose body is
+actually inspected continue to use `GET` and read it.
+
+**Evidence:** built under Node 22.23.4, served the static export with the same Python HTTP server
+used in Actions, ran accessibility (all pass) and smoke (138/138) on Node 22.23.4; smoke passed 3
+consecutive runs. This is a test-harness/network-client issue, not a Next.js configuration failure.

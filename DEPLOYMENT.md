@@ -140,6 +140,11 @@ builds the export. It starts Python's built-in static file server against `out/`
 `npm run a11y` and `npm run smoke` **against that exact artifact**, before upload. This both avoids
 the false CI failure and makes the check meaningful: we test the files GitHub Pages will receive.
 
+The smoke runner uses `HEAD` for checks that only need a status code and drains the bodies of
+redirect/POST responses. This matters on Node 22.23.4: Undici can assert if a `GET` body is abandoned
+while the socket closes. The runner is tested under the same Node version as Actions against the
+static export; accessibility passes and smoke passes 138/138.
+
 #### 2. No base path, because this site is on a custom domain
 
 A Pages *project* site serves from `/<repo>/` — but **a custom domain serves the site at `/`**.
