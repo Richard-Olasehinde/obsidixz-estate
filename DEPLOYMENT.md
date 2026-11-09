@@ -124,7 +124,15 @@ and cannot know whether a message was written or delivered — so it never claim
 - a copy control is present;
 - no delivery or receipt confirmation appears anywhere on the page.
 
-**Inbox behaviour** — *cannot* be automated and must be done by a person:
+**Inbox behaviour** — *cannot* be automated and must be done by a person.
+
+You need **any one** email account that is not the business mailbox. That is the only requirement.
+Do not assume the apex Zoho records mean a usable mailbox exists there: published MX records prove
+only that the domain accepts mail, not that anyone can sign in to the other end.
+
+If you have no second account at all, the cheapest honest route is whichever is easiest for you — a
+free webmail account, or your own existing personal or work address, since what is being tested is
+whether the business mailbox accepts and answers mail.
 
 1. From an email account that is **not** the business mailbox, send a message to
    `obsidixz.realestate@outlook.com`.
@@ -154,7 +162,7 @@ direct DNS query, not assumed.
 | --- | --- | --- | --- |
 | `obsidixz.pp.ua` | `A` | `185.199.108.153`, `.109.153`, `.110.153`, `.111.153` | **GitHub Pages** site at the apex |
 | `www.obsidixz.pp.ua` | `CNAME` | `richard-olasehinde.github.io` | Same GitHub Pages site |
-| `obsidixz.pp.ua` | `MX` | `mx.zoho.com` (10), `mx2.zoho.com` (20), `mx3.zoho.com` (50) | **Live Zoho Mail** at the apex |
+| `obsidixz.pp.ua` | `MX` | `mx.zoho.com` (10), `mx2.zoho.com` (20), `mx3.zoho.com` (50) | Zoho accepts mail for the apex. **This is a DNS fact only** — it does not establish that a Zoho mailbox is provisioned, reachable or in use |
 | `obsidixz.pp.ua` | `TXT` | `v=spf1 include:zohomail.com ~all` | SPF for Zoho |
 | `obsidixz.pp.ua` | `TXT` | `zoho-verification=…`, `google-site-verification=…` | Domain ownership proofs |
 | `_dmarc.obsidixz.pp.ua` | `TXT` | `v=DMARC1; p=none; rua=mailto:admin@obsidixz.pp.ua` | **DMARC already published** |

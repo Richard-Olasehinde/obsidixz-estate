@@ -49,7 +49,7 @@ These are separate concerns and are treated separately throughout:
 
 | Purpose | Name | Configured by | Status |
 | --- | --- | --- | --- |
-| **Site email** (`hello@obsidixz.pp.ua`, Zoho) | `obsidixz.pp.ua` | Zoho Mail — already live | ✅ Working today |
+| **Apex mail** | `obsidixz.pp.ua` | Zoho MX records are published | ⚠️ **DNS only** — no Zoho mailbox has been confirmed to exist or be usable. Do not rely on this as a second address |
 | **Website address** | `realestate.obsidixz.pp.ua` | Node host (TBD) | ⬜ No DNS record yet |
 | **Enquiry notifications** | `send.obsidixz.pp.ua` or similar | The provider chosen here | ⬜ **The open question** |
 

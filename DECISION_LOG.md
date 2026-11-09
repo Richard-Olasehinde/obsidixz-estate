@@ -765,3 +765,27 @@ rotation, recolouring, redrawing or sharpening was applied.
 **Accessibility:** the image is `alt=""` and `aria-hidden`, the label is `aria-hidden`, and the
 link carries `aria-label="Obsidixz Real Estate home"`. A screen reader announces the destination
 once, rather than spelling out "OBSIDIXZ… Real Estate".
+
+### D65. Nothing may be assumed to exist behind a DNS record
+
+**Correction, at the founder's direction.** Earlier notes described the apex MX records on
+`obsidixz.pp.ua` as "live Zoho Mail" and treated that as an available second mailbox for testing.
+That inference was wrong and has been removed from `DEPLOYMENT.md` and `PROVIDER_EVALUATION.md`.
+
+**What the DNS actually establishes:** `mx.zoho.com`, `mx2.zoho.com` and `mx3.zoho.com` are
+published for the apex, and the apex SPF includes `zohomail.com`. That means Zoho's servers will
+accept mail addressed to that domain.
+
+**What it does not establish:** that any mailbox is provisioned there, that anyone has credentials
+for it, that it is monitored, or that the founder uses it at all. A published MX record is a
+statement about where mail *may* be delivered — not evidence that a working, read mailbox exists.
+
+This is the same class of error as treating DNS verification as provider acceptance, which this
+project already recorded once. The rule now applies in both directions:
+
+- a provider verifying our DNS does not mean it will accept our domain;
+- a domain publishing someone's MX does not mean that mailbox is usable.
+
+**Consequence for BLK-01:** the verification steps require *any* account that is not the business
+mailbox, and name none specifically. The choice of that account is the founder's, not an assumption
+to be baked into the documentation.
