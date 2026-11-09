@@ -41,13 +41,17 @@ export const privacySections: LegalSection[] = [
         kind: 'paragraph',
         text: 'This policy explains how Obsidixz Real Estate handles personal information collected through this website at realestate.obsidixz.pp.ua. Obsidixz Real Estate is a research and lead-generation business and part of the Obsidixz organisation.',
       },
-      pending(
-        'Legal entity name and registered address',
-        'The business must state the legal entity that operates this website and its registered address, if one is required in its jurisdiction. These details have not been supplied.',
-      ),
       {
         kind: 'paragraph',
-        text: 'The business operates remotely and serves clients in the United States. It does not maintain an office in the United States.',
+        text: 'This website is operated by Richard Olasehinde, trading under the Obsidixz Real Estate brand. Obsidixz Real Estate is not a registered company; the brand name identifies the business but is not a separate legal entity.',
+      },
+      {
+        kind: 'paragraph',
+        text: 'Contact address: No. 4 Adeoye Street, Alarere, Ibadan, 200109, Nigeria. This is a correspondence address. It is not a registered office, and no office or other establishment is maintained in the United States.',
+      },
+      {
+        kind: 'paragraph',
+        text: 'The business operates remotely and serves clients in the United States.',
       },
     ],
   },
@@ -109,7 +113,7 @@ export const privacySections: LegalSection[] = [
       },
       pending(
         'Hosting provider and its data-processing terms',
-        'The hosting provider has not been selected. Once it is, its name and data-processing terms should be named here.',
+        'This website has not yet been published to a hosting provider. No hosting provider is named here because none has been selected, and naming one that is not in use would be false. This must be completed before the site goes live.',
       ),
     ],
   },
@@ -149,13 +153,17 @@ export const privacySections: LegalSection[] = [
     id: 'retention',
     heading: '7. How long information is kept',
     blocks: [
-      pending(
-        'Retention period for enquiries',
-        'A specific retention period has not been established. The business should state how long enquiry correspondence and any resulting research records are kept, and the basis for that period.',
-      ),
       {
         kind: 'paragraph',
-        text: 'Enquiry correspondence exists as email in the business Outlook mailbox and in the sender\'s own mailbox. Its retention in each is governed by the respective provider and by the business\'s own mailbox management. This website holds no copy.',
+        text: 'Enquiry correspondence is kept for 24 months after the enquiry is closed. Where an enquiry has been inactive for 12 months, it is reviewed to decide whether it should be closed, at which point the 24-month period begins.',
+      },
+      {
+        kind: 'paragraph',
+        text: 'This is a record-keeping policy applied to the mailbox. It is not an automatic deletion feature: enforcement is by review of the mailbox, not by the email provider. No claim is made here about copies the email provider may retain in its own backups, because those arrangements are the provider\'s and have not been verified by the business.',
+      },
+      {
+        kind: 'paragraph',
+        text: 'Enquiry correspondence exists as email in the business Outlook mailbox and in the sender\'s own mailbox. This website holds no copy, and retention in the sender\'s mailbox is a matter for the sender.',
       },
     ],
   },
@@ -238,10 +246,10 @@ export const termsSections: LegalSection[] = [
         kind: 'paragraph',
         text: 'These terms cover the website itself. They are not a customer service agreement. Any research engagement is governed by a separate written agreement with its own scope, deliverable and terms.',
       },
-      pending(
-        'Identity of the contracting party',
-        'The legal entity that operates the website and would enter any service agreement has not been supplied.',
-      ),
+      {
+        kind: 'paragraph',
+        text: 'This website is operated by Richard Olasehinde, trading under the Obsidixz Real Estate brand. Obsidixz Real Estate is not a registered company; the brand name identifies the business but is not a separate legal entity. Correspondence address: No. 4 Adeoye Street, Alarere, Ibadan, 200109, Nigeria — a correspondence address, not a registered office.',
+      },
     ],
   },
   {

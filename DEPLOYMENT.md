@@ -53,36 +53,164 @@ visitor's own email application.
 
 ---
 
-## 3. Hosting options
+## 3. Hosting
 
-Any host that runs a Node.js server works. Two realistic choices:
+**Current state: there is no deployment.** This was checked rather than assumed — see §3.1.
 
-### Option A — Vercel (least configuration)
+### 3.1 What was checked, and what was found
 
-1. Import the GitHub repository.
-2. Framework is auto-detected as Next.js; build and output settings need no change.
-3. Add the environment variables from §4 under **Settings → Environment Variables**.
-4. Deploy.
+| Check | Result |
+| --- | --- |
+| Deployment config in the repo (`vercel.json`, `netlify.toml`, `wrangler.*`, `.vercel/`, `.netlify/`, `staticwebapp.config.json`, `firebase.json`, `app.yaml`) | **None present** |
+| `.github/workflows/` | **Absent until this change** (a Pages workflow was added — see §3.3) |
+| Git branches | `main` and the working branch only; no deployment branch |
+| Commits mentioning deploy/hosting | Only the documentation commits from Stage 8 |
+| GitHub Pages configured on the repository | `has_pages: false` |
+| Repository homepage field | `null` |
+| `realestate.obsidixz.pp.ua` | **NXDOMAIN** |
+| Candidate platform hostnames | No `*.pages.dev`; `*.vercel.app`, `*.netlify.app` and `*.onrender.com` answer at DNS level because those platforms **wildcard every subdomain**, not because a site exists. None could be fetched. |
+| Deploy tokens in this environment (`VERCEL_*`, `NETLIFY_*`, `CLOUDFLARE_*`) | **None** |
 
-No `vercel.json` is required. `npm run check` is separate — add it as a CI step if you want
-deployments gated on the checks.
+**Conclusion: no hosting destination exists, and none could be created from here.** The remaining
+gap is a one-time account-level action by the founder.
 
-### Option B — Any Node host (Render, Railway, Fly.io, a VPS)
+### 3.2 Recommendation: GitHub Pages
 
-```bash
-npm ci
-npm run build
-npm run start            # binds to $PORT, defaults to 3000
-```
+The site is **fully static** — `next build` marks all 13 routes as prerendered, with no API route,
+no server action and no database. That removes the reason a Node host was previously required.
 
-Run it behind a TLS-terminating reverse proxy (Caddy, nginx, or the host's own edge). The app
-serves plain HTTP and expects HTTPS to be terminated upstream.
+GitHub Pages is recommended because it needs **no new account**: the code is already in this
+repository, so enabling Pages is a settings change, not a signup.
 
-### Option C — Not recommended: static export
+| Requirement | GitHub Pages |
+| --- | --- |
+| Account | Already exists (the repository) |
+| Cost | Free for public repositories |
+| Runtime needed | None — correct for this site |
+| Custom domain | Supported, free, automatic HTTPS via Let's Encrypt |
+| Preview URL | `https://<user>.github.io/<repo>/` from the first successful run |
+| Limitation | **Public repositories only** on the free tier |
 
-`output: 'export'` would remove the server, and with it server-side validation, the rate limiter
-and secret-safe delivery. The form would have to post directly from the browser to a third party.
-Avoid unless you accept those trade-offs.
+> **The repository is currently private.** Free GitHub Pages requires it to be public, or a paid
+> plan to serve Pages from a private repository. That is a decision for the founder: make this
+> repository public, or use one of the alternatives below. It is not a technical constraint — the
+> site contains no secrets, and the static output is public by definition once deployed.
+
+**Alternatives**, if the repository should stay private:
+
+| Host | Why it would work | Trade-off |
+| --- | --- | --- |
+| Cloudflare Pages | Free, private repos allowed, static, excellent CDN | New account |
+| Netlify | Free, private repos allowed | New account |
+| Vercel | Zero-config for Next.js, private repos allowed | New account; commercial-use terms differ on the free tier |
+
+### 3.3 The included workflow
+
+`.github/workflows/deploy-pages.yml` was added and runs on every push to `main`.
+
+**One thing in it will silently break the site if removed.** A Pages *project* site serves from
+`https://<user>.github.io/<repo>/` — a sub-directory, not a domain root. Every asset URL must carry
+the `/<repo>` prefix, supplied by `NEXT_PUBLIC_BASE_PATH` and turned into `basePath` +
+`assetPrefix` by `next.config.ts`.
+
+Without it the HTML still returns **200**, while every stylesheet, script and image URL resolves
+one level too high and returns **404**. The page loads unstyled, which reads as "deployment broken"
+rather than "base path missing". The workflow's *Verify the base path was applied* step fails the
+run in that case, and it was tested against both outcomes.
+
+The workflow also writes `.nojekyll`, without which Jekyll skips every directory beginning with an
+underscore — including `/_next/`, i.e. the entire CSS and JS bundle.
+
+---
+
+## 3a. Exact DNS records
+
+Do not add these until a deployment is green in the hosting dashboard — a CNAME pointing at a host
+that does not yet recognise the domain will serve that host's 404 page.
+
+### Before you touch anything: what must not change
+
+`obsidixz.pp.ua` is a live zone with working mail. These records are **not** to be touched:
+
+| Record | Current value | Why it must stay |
+| --- | --- | --- |
+| `obsidixz.pp.ua` `A` | `185.199.108.153` and 3 siblings | GitHub Pages serving the apex |
+| `www` `CNAME` | `richard-olasehinde.github.io` | Existing site |
+| `obsidixz.pp.ua` `MX` | `mx.zoho.com` 10, `mx2` 20, `mx3` 50 | Inbound mail for the apex domain |
+| `obsidixz.pp.ua` `TXT` | `v=spf1 include:zohomail.com ~all` | SPF. **Never create a second SPF record** |
+| `_dmarc.obsidixz.pp.ua` `TXT` | `v=DMARC1; p=none; rua=mailto:admin@obsidixz.pp.ua` | In use. Do not edit or replace |
+
+**All of these sit on the apex or `www`.** The only record this deployment adds is on
+`realestate`, a name that currently does not exist. **There is no collision surface at all** — the
+new record cannot affect apex mail, the existing site, or DMARC.
+
+### The record to add
+
+Assuming GitHub Pages with the repository at `Richard-Olasehinde/obsidixz-estate`, and the site
+served from the **custom domain** `realestate.obsidixz.pp.ua`:
+
+| Field | Value |
+| --- | --- |
+| Type | `CNAME` |
+| Name | `realestate` |
+| Value / Target | `richard-olasehinde.github.io` |
+| TTL | `3600` (or "Automatic" if uadns offers it) |
+| Proxy setting | **Not applicable** — uadns is a plain authoritative DNS host, not a proxy. There is no orange-cloud equivalent to set. |
+
+**The trailing dot matters.** A CNAME target must be fully qualified. If you enter the value
+without a trailing dot and uadns treats it as relative, you get
+`richard-olasehinde.github.io.obsidixz.pp.ua`, which does not exist. This project has already hit
+exactly that fault once, on the DKIM records. If uadns offers no way to express the absolute form,
+the record is still correct — verify with `dig` or `nslookup` afterwards rather than assuming.
+
+**Verification record:** GitHub Pages does **not** require a separate `TXT`
+`_github-pages-challenge-…` record for a *custom domain on a user or organisation account* when
+the domain is configured through the repository settings. If GitHub's domain panel presents one,
+add it exactly as shown — but do not invent one.
+
+### If the hosting choice changes
+
+| Host | Type | Name | Value |
+| --- | --- | --- | --- |
+| Cloudflare Pages | `CNAME` | `realestate` | `<project>.pages.dev` |
+| Netlify | `CNAME` | `realestate` | `<site>.netlify.app` |
+| Vercel | `CNAME` | `realestate` | `cname.vercel-dns.com` |
+
+Vercel may issue a **project-specific** target of the form
+`<hash>.vercel-dns-017.com` instead. Use whichever value Vercel's own domain panel shows for this
+project — *not* the generic one — if the two differ. Do not copy a value from this document.
+
+### Order of operations
+
+1. Deploy. Confirm the platform's own preview URL serves the site.
+2. Add `realestate.obsidixz.pp.ua` as a custom domain **in the hosting dashboard** and let it show
+   you its required record.
+3. Add the CNAME at uadns. Confirm it resolves.
+4. Wait for the host to verify the domain and issue the certificate.
+5. Only then change `NEXT_PUBLIC_SITE_URL` if the canonical host has changed, and redeploy.
+
+### Three separate statuses — do not conflate them
+
+| Status | What it means | How to check |
+| --- | --- | --- |
+| **Deployment** | The build is published and served by the host | Open the platform's preview URL. Green in the Actions tab. |
+| **DNS** | `realestate.obsidixz.pp.ua` resolves to the host | `nslookup realestate.obsidixz.pp.ua` returns the host's target |
+| **HTTPS** | A valid certificate is issued for the custom domain | `https://realestate.obsidixz.pp.ua` loads with no certificate warning |
+
+The site can be fully **deployed** while **DNS** is still NXDOMAIN — that is the preview-URL stage.
+DNS can resolve while **HTTPS** is still provisioning; that generally takes minutes but can take
+hours. None of the three implies the others.
+
+### Sub-path detail for GitHub Pages
+
+A project site is served from `/<repo>/`, so the build **must** set
+`NEXT_PUBLIC_BASE_PATH=/<repo>` (the workflow does this automatically from the repository name).
+When GitHub Pages serves the site on its **custom domain**, the path is still `/<repo>/` unless a
+`CNAME` file is present in the published output — GitHub's custom-domain handling rewrites the
+root, but the safest approach is to leave the base path in place and confirm with a real fetch.
+
+If the site 404s on assets at the custom domain but works on `github.io/<repo>/`, the base path is
+the first thing to check.
 
 ---
 

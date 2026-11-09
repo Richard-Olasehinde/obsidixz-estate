@@ -599,13 +599,13 @@ Full detail, including exactly what to supply and where it appears, is in
 
 | ID | Item | Appears in | Status |
 | --- | --- | --- | --- |
-| LR-01 | Legal entity name and registered address | `/privacy-policy` §1, `/terms-of-service` §1 | ⬜ Pending |
+| ~~LR-01~~ | ✅ **Resolved 2026-11-06** — Richard Olasehinde, trading as the Obsidixz Real Estate brand (not a registered company); No. 4 Adeoye Street, Alarere, Ibadan, 200109, Nigeria, stated as a correspondence address, not a registered office | `/privacy-policy` §1, `/terms-of-service` §1 | ✅ Done |
 | LR-02 | Governing law | `/terms-of-service` §10 | ⬜ Pending |
 | LR-03 | Jurisdiction for disputes | `/terms-of-service` §10 | ⬜ Pending |
-| LR-04 | Retention period for enquiries | `/privacy-policy` §7 | ⬜ Pending |
-| LR-05 | Privacy contact route | `/privacy-policy` §8, §11 | 🟡 Address confirmed and published; **statutory framework and response period** still to be reviewed |
+| ~~LR-04~~ | ✅ **Resolved** — 24 months after closure, with inactive enquiries reviewed at 12 months. Applied as a record-keeping policy, explicitly **not** as automatic deletion, and making no claim about provider backup retention | `/privacy-policy` §7 | ✅ Done |
+| LR-05 | Privacy contact route | `/privacy-policy` §8, §11 | 🟡 Address confirmed and published; **statutory framework and response period** still to be reviewed. The contact route itself is resolved |
 | LR-06 | Applicable data-protection framework | `/privacy-policy` §8 | ⬜ Pending |
-| LR-07 | Hosting provider and data-processing terms | `/privacy-policy` §4 | ⬜ Pending (depends on host choice) |
+| LR-07 | Hosting provider and data-processing terms | `/privacy-policy` §4 | ⬜ **Blocked on the hosting decision.** No deployment exists, so no provider can honestly be named |
 | ~~LR-08~~ | ✅ **Resolved** — no delivery provider exists. Enquiries are ordinary email received in Microsoft Outlook, and §5 now says exactly that | `/privacy-policy` §5 | ✅ Done |
 | LR-09 | Liability wording reviewed by a qualified adviser | `/terms-of-service` §8 | ⬜ Pending |
 
@@ -734,3 +734,62 @@ Two real defects were found by these checks rather than by inspection:
 | Screen-reader pass over the new contact section | Structure and ARIA verified statically only |
 | Keyboard-only walk through the copy failure state | Logic asserted; the interaction itself needs a browser |
 | Incoming email and reply delivery | Needs a second email account; see B above |
+
+---
+
+## Post-Stage-8: business identity, retention and hosting preparation
+
+Founder-supplied clarifications applied. No worksheet was produced.
+
+### Resolved placeholders
+
+| Was pending | Now states |
+| --- | --- |
+| Legal entity name and registered address (Privacy §1) | Richard Olasehinde, trading under the Obsidixz Real Estate brand. **Not a registered company.** Address given as a correspondence address, explicitly **not** a registered office. |
+| Identity of the contracting party (Terms §1) | Same identity, same wording, applied consistently. |
+| Retention period (Privacy §7) | 24 months after closure; inactive enquiries reviewed at 12 months. Stated as a mailbox record-keeping policy, **not** an automatic deletion feature, with no claim about provider backup retention. |
+
+The nine gold panels are now **six**. The wording deliberately does not imply a company, does not
+call the address a registered office, and does not describe Outlook as deleting anything.
+
+### Still unresolved — and why
+
+| ID | Item | Why it cannot be resolved from existing context |
+| --- | --- | --- |
+| LR-02 | Governing law | The founder's instruction is explicit that supplying an identity and address does **not** determine governing law. A Nigerian address does not by itself settle it, and inferring it would be the same class of error this project has already recorded twice. |
+| LR-03 | Dispute jurisdiction | Follows governing law; same reasoning. |
+| LR-06 | Applicable data-protection framework | Requires a legal judgement about which regimes apply to a Nigerian sole trader serving US clients. Not a documentation gap. |
+| LR-05 | Statutory rights and response period | Follows LR-06. The **contact route** is resolved; the statutory framing is not. |
+| LR-09 | Liability wording review | Requires a qualified adviser by definition. |
+| LR-07 | Hosting provider disclosure | Blocked on the hosting decision — no deployment exists, so naming a provider would be false. |
+
+### Hosting
+
+**No deployment destination was found** — checked across repo config files, workflows, branches,
+commits, GitHub Pages settings, the repository homepage field, the domain itself, and deploy
+tokens in this environment. Details in `DEPLOYMENT.md` §3.1.
+
+**Recommendation: GitHub Pages.** The site is fully static, so no runtime is needed, and Pages
+requires no new account. **One decision is needed:** free GitHub Pages requires a public
+repository, and this one is currently private.
+
+Added `.github/workflows/deploy-pages.yml`, including a guarded base-path check. A Pages project
+site serves from a sub-directory; without the prefix the page returns 200 while every asset 404s.
+The guard was tested against both a correct and a missing base path.
+
+### Checks after these changes
+
+| Check | Result |
+| --- | --- |
+| `npm run typecheck` · `npm run lint` | clean |
+| `npm run layout` | 35/35 |
+| `npm run a11y` | all pass |
+| `npm run copy-feedback` | 8/8 |
+| `npm run smoke` | 138/138 |
+| `npm run perf` | 28/28 |
+| Build, default | 13/13 routes static |
+| Build with `NEXT_PUBLIC_BASE_PATH` | succeeds; prefixed asset URLs verified |
+
+One regression was caught and fixed during this work: narrowing `images.deviceSizes` removed the
+1200px width that the performance budget measures against, failing "hero image is served as AVIF".
+Restored, and the budget passes again.

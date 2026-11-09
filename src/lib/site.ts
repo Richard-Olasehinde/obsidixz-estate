@@ -72,12 +72,27 @@ export const hasPublicPhone = businessContact.phone.length > 0;
  * available on request and to the email provider.
  */
 export const businessAddress = {
-  street: 'No 4, Adeoye Street',
+  street: 'No. 4 Adeoye Street',
+  district: 'Alarere',
   city: 'Ibadan',
   postalCode: '200109',
   country: 'Nigeria',
-  /** Single-line form, for legal pages or email footers if ever published. */
-  formatted: 'No 4, Adeoye Street, Ibadan 200109, Nigeria',
+  /** Single-line form, matching the address exactly as the founder supplied it. */
+  formatted: 'No. 4 Adeoye Street, Alarere, Ibadan, 200109, Nigeria',
+} as const;
+
+/**
+ * The operating identity — CONFIRMED BY THE FOUNDER 2026-11-06.
+ *
+ * A named individual trading under a brand, NOT a registered company. Both
+ * facts are stated on the legal pages: the operator is named, and the brand is
+ * explicitly described as not being a separate legal entity, so a brand name
+ * cannot imply a company that does not exist.
+ */
+export const businessIdentity = {
+  operator: 'Richard Olasehinde',
+  entityType: 'sole trader',
+  isRegisteredCompany: false,
 } as const;
 
 /**
@@ -87,8 +102,10 @@ export const businessAddress = {
  */
 export const PENDING_BUSINESS_DETAILS = {
   legalEntityName: null,
-  // Resolved 2026-11-06: founder supplied the real trading address.
+  // Resolved 2026-11-06: founder supplied the real correspondence address and
+  // the operating identity. Published on both legal pages (see DECISION_LOG D67).
   registeredAddress: 'supplied',
+  businessIdentity: 'supplied',
   companyRegistrationNumber: null,
   governingLaw: null,
   privacyContactEmail: null,

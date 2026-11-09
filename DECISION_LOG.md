@@ -815,3 +815,67 @@ where both paths refuse.
 **What has not changed:** success is still reported only when a copy genuinely resolved. The
 fallback cannot manufacture a success — it reports `execCommand`'s own return value, and a `false`
 still produces the failure message.
+
+### D67. The business is a named individual trading under a brand, and is described that way
+
+**Decision:** the site states that it is operated by **Richard Olasehinde**, trading under the
+**Obsidixz Real Estate** brand, and states explicitly that Obsidixz Real Estate is **not a
+registered company**.
+
+**Why the "not a registered company" sentence is there rather than omitted:** omitting it would let
+a brand name imply a corporate entity that does not exist. Stating it plainly is the same
+transparency principle already applied to the emerging-business status elsewhere on the site. It is
+not a disclaimer of responsibility — the named individual remains the operator.
+
+**Address:** No. 4 Adeoye Street, Alarere, Ibadan, 200109, Nigeria, described as a *correspondence
+address* and explicitly **not** a registered office. The earlier decision (D56) not to publish a
+residential address is superseded **by the founder's explicit instruction**, not by convenience.
+The founder supplied it for publication and it is now published on both legal pages.
+
+**Consistency:** the same identity and address wording appears in Privacy §1 and Terms §1.
+
+### D68. Supplying an identity does not settle governing law, jurisdiction or privacy law
+
+**Decision:** LR-02, LR-03 and LR-06 remain open, and no governing law or jurisdiction is stated.
+
+**Why:** the founder's instruction is explicit — supplying an identity and a Nigerian address does
+not determine governing law, dispute jurisdiction or applicable privacy legislation. Inferring
+"you are in Nigeria, therefore Nigerian law applies" would be exactly the kind of plausible-looking
+guess this project forbids elsewhere.
+
+These now also render as visibly pending panels, so the site cannot silently imply a settled legal
+position.
+
+### D69. The 24-month retention decision is applied as a policy, not as an automated control
+
+**Decision:** Privacy §7 now states that enquiry correspondence is kept for **24 months after the
+enquiry is closed**, with **inactive enquiries reviewed at 12 months**. It states that this is a
+record-keeping policy enforced by reviewing the mailbox, and that it is **not** an automatic
+deletion feature.
+
+**Why the distinction is spelled out:** a retention period written as though the system enforces it
+would be a claim about Outlook's behaviour that has not been verified. The earlier encrypted-backup
+finding says nothing about Outlook's backup retention, and no provider-side deletion capability has
+been confirmed.
+
+The policy therefore claims only what the business controls — a review process — and explicitly
+declines to make claims about provider backups it cannot verify.
+
+### D70. GitHub Pages is recommended, with the sub-path failure guarded against
+
+**Decision:** recommend GitHub Pages, and commit `.github/workflows/deploy-pages.yml`.
+
+**Why Pages rather than Vercel:** the site became fully static when the enquiry API was removed, so
+a Node runtime is no longer needed. Pages requires **no new account**, which makes it the smallest
+possible step from the current state. Vercel would be a new signup for capability this site does
+not use.
+
+**Open decision recorded rather than assumed:** free GitHub Pages needs a **public** repository,
+and this repository is private. That is the founder's call. Cloudflare Pages, Netlify and Vercel
+are documented alternatives that permit private repositories.
+
+**The guard exists because the failure is silent.** A Pages project site serves from `/<repo>/`.
+Without `NEXT_PUBLIC_BASE_PATH`, the HTML returns 200 while every asset URL resolves one level too
+high and 404s — the page loads unstyled, which reads as "deployment broken" rather than "base path
+missing". The workflow fails the run in that case, and was tested against both outcomes. It also
+writes `.nojekyll`, without which Jekyll skips `/_next/` entirely.
