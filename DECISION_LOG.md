@@ -1003,3 +1003,27 @@ actually inspected continue to use `GET` and read it.
 **Evidence:** built under Node 22.23.4, served the static export with the same Python HTTP server
 used in Actions, ran accessibility (all pass) and smoke (138/138) on Node 22.23.4; smoke passed 3
 consecutive runs. This is a test-harness/network-client issue, not a Next.js configuration failure.
+
+### D77. Browser favicon uses the actual supplied parent-logo symbol
+
+**Correction of the temporary D5 placeholder.** The tab icon showed the royal/white/gold geometric
+tile from `scripts/generate-favicons.mjs`, which was not the founder's logo and remained visibly
+wrong after deployment.
+
+**Decision:** replace all three browser/app icon assets with a square favicon/touch icon made from
+a direct crop of the symbol in `public/brand/obsidixz-parent-logo-on-light.png`. The pixels are
+cropped and proportionally downscaled from supplied artwork; the symbol is not redrawn, recoloured,
+rotated, or stretched. The full parent lockup remains unchanged in the site header/footer. The SVG
+favicon embeds the same PNG crop; versioned icon URLs (`?v=2`) avoid a stale browser-cached
+placeholder.
+
+### D78. Give the supplied full logo lockup clearance inside the navigation bar
+
+The approved parent artwork includes its wordmark under the mark and is kept at its prescribed
+width/aspect ratio. At the old 80px desktop header height, that 112px-wide raster renders about
+94px tall, leaving the wordmark flush with/overflowing the header's lower edge.
+
+**Decision:** increase the header row to 80px on small widths, 92px at medium widths and 104px at
+large widths so the complete artwork fits with breathing room below the wordmark. A responsive
+layout metric asserts at least 4px vertical clearance at five representative viewport widths. No
+logo scaling, crop, or restyling in the header.
