@@ -6,8 +6,8 @@ serving US residential real-estate investors and property acquisition operators.
 > Helping property professionals identify relevant opportunities through useful real-estate
 > research and lead generation.
 
-This repository contains the public marketing website, including an eight-page information
-architecture and a configurable enquiry form.
+This repository contains the public marketing website: an eight-page information
+architecture, and a contact section that opens the visitor's own email application.
 
 ---
 
@@ -15,14 +15,19 @@ architecture and a configurable enquiry form.
 
 | Item | Status |
 | --- | --- |
-| Current stage | **All eight stages complete**, plus the confirmed-details and Resend update |
+| Current stage | **All eight stages complete**, plus direct-email contact and the parent-logo lockup |
 | Stages complete | 1, 2, 3, 4, 5, 6, 7, 8 |
-| Production build | Passing (`npm run build`) |
-| Verification | 135 route/SEO/API checks, 26 layout checks, 28 performance checks, full a11y pass |
-| Contact form delivery | **Built and tested, not yet live.** Resend integration ready; needs an account, a verified sending domain and an API key — see [ENVIRONMENT_SETUP.md §5](./ENVIRONMENT_SETUP.md#5-resend-transactional-email) |
-| Approved logo asset | ✅ **Supplied and integrated** — see [ASSETS_PENDING.md](./ASSETS_PENDING.md) |
+| Production build | Passing, and **fully static** — no server runtime is required |
+| Verification | 138 route/SEO/contact checks, 35 layout checks, 28 performance checks, full a11y pass, 6 copy-feedback branches |
+| Contact route | **Direct email.** The visitor's own email application sends to `obsidixz.realestate@outlook.com`; replies come from that mailbox. No form, no sending service, no backend |
+| Approved logo asset | ✅ **Supplied and integrated** — parent lockup with the "Real Estate" secondary label |
 | Business email | ✅ **Confirmed** — `obsidixz.realestate@outlook.com` |
 | Canonical domain | ✅ **Confirmed** — `https://realestate.obsidixz.pp.ua` |
+
+**What has and has not been verified.** The website's own interaction behaviour is covered by the
+automated suites below. Incoming delivery to the Outlook mailbox and replies sent from it are a
+**human** check that no script on this site can perform — see
+[DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md#email-verification).
 
 Detailed, always-current status lives in [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md).
 
@@ -36,7 +41,7 @@ Detailed, always-current status lives in [DEVELOPMENT_STATUS.md](./DEVELOPMENT_S
 | UI library | **React 19** | Required by Next.js |
 | Styling | **Tailwind CSS 4** | Design tokens live in CSS (`@theme`), no config sprawl |
 | Language | **TypeScript** (strict) | Type safety across components and the form contract |
-| Validation | **Hand-written, dependency-free** | One schema shared by the client form and the server route handler. Zod was removed after it added 120 KB of client JS for a seven-field form |
+| Contact | **`mailto:` link plus the visible address** | No form and no sending service, so nothing on the site can lose, misroute or silently fail an enquiry |
 | Fonts | **`@fontsource-variable`** (self-hosted) | Montserrat + Open Sans served from own origin: no third-party font CDN, no cookie/consent implications, better performance |
 | Icons / motifs | Inline SVG | No icon library dependency |
 | Images | Photographs in `/public/images` served through `next/image` | Optimised, sized, lazy-loaded |
@@ -63,10 +68,8 @@ npm install
 
 # 3. Create your local environment file
 cp .env.example .env.local
-#    Then edit .env.local. The domain and business email already have
-#    working defaults; set the Resend variables to switch the form on.
-#    The site runs fine with everything left blank; the contact form will
-#    report "submission not configured" until a destination is supplied.
+#    Then edit .env.local if you want to override the defaults. Everything
+#    has a working default: the site builds and runs with the file absent.
 
 # 4. Start the development server
 npm run dev
@@ -82,11 +85,12 @@ npm run dev
 | `npm run start` | Serve the production build (run `build` first) |
 | `npm run lint` | ESLint (Next.js core-web-vitals + TypeScript rules) |
 | `npm run typecheck` | `tsc --noEmit` |
-| `npm run check` | typecheck + lint + layout metrics + accessibility + build |
+| `npm run check` | typecheck + lint + layout metrics + accessibility + copy-feedback + build |
 | `npm run layout` | Proves text fits every multi-column cell at 360–1440 px |
 | `npm run a11y` | Contrast, landmarks, labels and ARIA references against a running build |
 | `npm run perf` | Performance budgets against a served production build |
-| `npm run smoke` | Route/SEO/link/asset/claim/API checks against a running build |
+| `npm run smoke` | Route/SEO/link/asset/claim/contact-route checks against a running build |
+| `npm run copy-feedback` | Proves the "Copy email address" success and failure messages |
 
 ## Testing
 
@@ -96,17 +100,21 @@ There is no unit-test framework in the project. Verification is done with three 
 2. **Build check** — `npm run build` must complete with no errors.
 3. **Behavioural suites** — run against a served build (dev or production):
 
-   - `npm run smoke` — 135 checks: every route returns HTML with a unique title, description and
+   - `npm run smoke` — 138 checks: every route returns HTML with a unique title, description and
      absolute canonical; one `<h1>` per page with no skipped levels; every internal link and
      in-page anchor resolves; every referenced asset returns 200; no fabricated business claims;
      JSON-LD parses and contains no invented address; robots and sitemap are correct; security
-     headers are present; and the enquiry API rejects invalid input while never reporting success
-     when delivery is unconfigured.
-   - `npm run layout` — 26 geometric assertions that the widest word in every multi-column cell
-     fits the narrowest column at 360/390/640/768/1024/1280/1440 px, measured with the real font
-     metrics the site serves.
-   - `npm run a11y` — 30 contrast pairs plus document structure, form labels, ARIA references and
-     focus semantics.
+     headers are present; the contact page's `mailto:` recipient and subject are correct, the
+     address is visible as text, and **no delivery confirmation is ever presented**; and the brand
+     lockup keeps its aspect ratio with a single accessible name.
+   - `npm run layout` — 35 geometric assertions that the widest word in every multi-column cell
+     fits the narrowest column from 320 to 1920 px, that the header lockup fits beside the menu
+     control, and that the business address fits its panel — measured with the real font metrics
+     the site serves.
+   - `npm run a11y` — 30 contrast pairs plus document structure, labels, ARIA references and focus
+     semantics.
+   - `npm run copy-feedback` — the six branches that decide whether the visitor is told "Email
+     address copied" or "Couldn't copy…".
    - `npm run perf` — gzipped JS/HTML/CSS budgets per page, hero image format and size, immutable
      caching and compression.
 
@@ -135,10 +143,9 @@ Manual checks performed across stages are listed in
 | `/services` | Property Lead Research explained in detail |
 | `/how-it-works` | Five-step research workflow |
 | `/who-we-serve` | Primary audience (residential investors) and secondary (acquisition operators) |
-| `/contact` | Enquiry form with validation and real delivery states |
+| `/contact` | Direct email: mailto action, visible address, copy button |
 | `/privacy-policy` | Privacy policy drafted from the actual implementation |
 | `/terms-of-service` | Terms of service for a research service |
-| `/api/enquiry` | `POST` endpoint that validates and delivers enquiries |
 | `not-found` | Custom 404 |
 
 ---
@@ -161,6 +168,8 @@ Manual checks performed across stages are listed in
 
 This website represents an **emerging** business. When editing copy or adding sections:
 
+- **Never claim** that an enquiry was sent, received or delivered. Clicking a `mailto:` link
+  proves only that a handler was invoked.
 - **Never add** testimonials, client logos, case studies, transaction counts, investment
   returns, awards, certifications, staff numbers, years of experience, or a US office
   address. None of these exist.

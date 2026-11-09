@@ -4,7 +4,18 @@
 public suffix `pp.ua` to `obsidixz.realestate@outlook.com`?
 
 **Date:** 2026-11-06
-**Status:** investigation only. **No code and no DNS records were changed.**
+**Status:** closed. This investigation answered a question that no longer needs answering.
+
+> **Outcome, recorded so this document is not mistaken for current architecture.** The enquiry form
+> and its entire delivery path have been **removed** from the website. Contact is now direct email:
+> the visitor's own email application sends to `obsidixz.realestate@outlook.com`, and replies come
+> from that mailbox. No transactional provider is used, none is needed, and none is being pursued.
+>
+> This document is kept because it records two findings worth not rediscovering: Resend refuses any
+> `pp.ua` hostname, and Brevo *did* authenticate one but gated API access behind phone verification.
+> Neither provider is required by the site as it now stands. See `DECISION_LOG.md` D59–D63.
+
+The investigation itself changed no code and no DNS records at the time it was written.
 
 Every claim below is tagged:
 

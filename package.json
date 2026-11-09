@@ -2,7 +2,7 @@
   "name": "obsidixz-real-estate",
   "version": "1.0.0",
   "private": true,
-  "description": "Official website for Obsidixz Real Estate — US residential real-estate research and lead generation.",
+  "description": "Official website for Obsidixz Real Estate \u2014 US residential real-estate research and lead generation.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -10,10 +10,11 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "smoke": "node scripts/smoke-test.mjs",
-    "check": "npm run typecheck && npm run lint && npm run layout && npm run a11y && npm run build",
+    "check": "npm run typecheck && npm run lint && npm run layout && npm run a11y && npm run copy-feedback && npm run build",
     "layout": "node scripts/check-layout-metrics.mjs",
     "a11y": "node scripts/check-accessibility.mjs",
-    "perf": "node scripts/check-performance.mjs"
+    "perf": "node scripts/check-performance.mjs",
+    "copy-feedback": "node scripts/check-copy-feedback.mjs"
   },
   "dependencies": {
     "@fontsource-variable/montserrat": "^5.3.0",

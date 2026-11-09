@@ -109,7 +109,7 @@ export const processSteps = [
     title: 'Submit your requirements',
     summary: 'Send your target location and the criteria a property needs to meet.',
     detail:
-      'You share the market you are looking at, the property type and size you want, and any signals that matter for your strategy. A short written brief or the website enquiry form is enough to start.',
+      'You share the market you are looking at, the property type and size you want, and any signals that matter for your strategy. A short written brief sent by email is enough to start.',
     icon: 'document' as const,
   },
   {

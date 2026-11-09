@@ -1,14 +1,18 @@
 # DEVELOPMENT STATUS
 
-Last updated: **2026-11-06** — after Stage 8, plus the confirmed-details and Resend update.
+Last updated: **2026-11-06** — after Stage 8, the confirmed-details update, and the switch to
+direct-email contact with the parent-logo lockup.
 
 ---
 
 ## Current stage
 
 **Stage 8 — Deployment preparation.** Complete and committed. All eight stages are done, audited,
-and handed over. A post-handover update absorbed two founder-confirmed details (business email,
-domain) and added a Resend delivery mode — see the section below.
+and handed over.
+
+A later round replaced the enquiry form with **direct email** and applied the **parent-logo
+lockup**. See [§ Post-Stage-8: direct email contact](#post-stage-8--direct-email-contact) below.
+The site is now fully static and needs no server runtime.
 
 ## Stage register
 
@@ -501,6 +505,14 @@ These are listed as open verification items for the founder, not as passes.
 
 ## Post-handover update — confirmed details and Resend
 
+> **Superseded.** This section records the Resend delivery path that was built at the time. It was
+> never activated: Resend would not verify any `pp.ua` hostname. The form and the entire delivery
+> adapter have since been **removed** — see *Post-Stage-8: direct email contact* below, which is
+> the current state. Kept for history, not as a description of the code.
+
+Two details previously recorded as blockers were confirmed by the founder on 2026-11-06, and a
+Resend delivery path was added at the founder's request.
+
 Two details previously recorded as blockers were confirmed by the founder on 2026-11-06, and a
 Resend delivery path was added at the founder's request.
 
@@ -562,7 +574,7 @@ Classification follows the brief: **A** development blocker, **B** configuration
 
 | ID | Class | Item | Needed by | Owner |
 | --- | --- | --- | --- | --- |
-| BLK-01 | **B** | Enquiry delivery not yet active. Adapter and Resend integration are built and tested against a mock; the Resend account, verified domain and API key are not supplied | Launch | Founder |
+| BLK-01 | **B** | Incoming email has never been confirmed to reach `obsidixz.realestate@outlook.com`, nor a reply to leave it. The website side is built and verified; this is a four-step human check | Launch | Founder |
 | ~~BLK-02~~ | ✅ | **Closed 2026-11-06** — `obsidixz.realestate@outlook.com` confirmed and published | — | — |
 | ~~BLK-03~~ | ✅ | **Closed 2026-11-06** — transparent logo pair supplied and integrated | — | — |
 | BLK-04 | **D** | Legal entity name, registration number, registered address | Legal page review | Founder + adviser |
@@ -579,7 +591,7 @@ Full detail, including exactly what to supply and where it appears, is in
 
 | ID | Blocker | Where it appears | What closes it |
 | --- | --- | --- | --- |
-| BLK-01 | Enquiry delivery not active | `/contact`, `/api/enquiry` | Create the Resend account, verify `send.realestate.obsidixz.pp.ua`, set the four variables, then **confirm a real message in the Outlook inbox**. See ENVIRONMENT_SETUP.md §5 |
+| BLK-01 | Incoming/reply email not yet confirmed by hand | `/contact` | Send one message from an unrelated account to `obsidixz.realestate@outlook.com`, confirm arrival (including junk), reply from that Outlook account, confirm the reply arrives. See DEPLOYMENT.md §5.1 |
 | ~~BLK-02~~ | ✅ Closed — email confirmed and published | — | — |
 | ~~BLK-03~~ | ✅ Closed — logo supplied and integrated | — | Favicon and OG card still use the generated placeholder until a vector mark is supplied |
 
@@ -594,7 +606,7 @@ Full detail, including exactly what to supply and where it appears, is in
 | LR-05 | Privacy contact route | `/privacy-policy` §8, §11 | 🟡 Address confirmed and published; **statutory framework and response period** still to be reviewed |
 | LR-06 | Applicable data-protection framework | `/privacy-policy` §8 | ⬜ Pending |
 | LR-07 | Hosting provider and data-processing terms | `/privacy-policy` §4 | ⬜ Pending (depends on host choice) |
-| LR-08 | Enquiry delivery provider | `/privacy-policy` §5 | ⬜ Pending (depends on BLK-01) |
+| ~~LR-08~~ | ✅ **Resolved** — no delivery provider exists. Enquiries are ordinary email received in Microsoft Outlook, and §5 now says exactly that | `/privacy-policy` §5 | ✅ Done |
 | LR-09 | Liability wording reviewed by a qualified adviser | `/terms-of-service` §8 | ⬜ Pending |
 
 Each of these renders on the live page as a gold, dashed "To be confirmed before publication"
@@ -608,7 +620,7 @@ panel with a plain-language explanation. None has been filled with a plausible-l
 | Screen-reader pass (VoiceOver / NVDA / TalkBack) | Structure and ARIA verified statically only |
 | Cross-browser check (Safari, Firefox, Chrome, Edge) | Only the served production output was inspected |
 | Lighthouse / Core Web Vitals | Requires a browser and a deployed origin |
-| One real end-to-end enquiry after configuration | Needs the founder's destination |
+| Incoming email reaching Outlook, and a reply leaving it | Needs a second email account the founder controls; cannot be automated from this environment |
 
 ---
 
@@ -616,11 +628,11 @@ panel with a plain-language explanation. None has been filled with a plausible-l
 
 All eight implementation stages are complete. What remains is not development:
 
-1. **Close BLK-01** — create the Resend account, verify `send.realestate.obsidixz.pp.ua`, set
-   `ENQUIRY_DELIVERY_MODE=resend`, `RESEND_API_KEY`, `ENQUIRY_FROM_EMAIL` and `ENQUIRY_TO_EMAIL`,
-   then send one real enquiry and **find it in `obsidixz.realestate@outlook.com`**. Follow
-   [ENVIRONMENT_SETUP.md §5](./ENVIRONMENT_SETUP.md#5-resend-transactional-email).
-   This is the single change that turns the site from "built" into "usable".
+1. **Close BLK-01** — send a message from an unrelated email account to
+   `obsidixz.realestate@outlook.com`, confirm it arrives (checking junk), reply to it from that
+   Outlook account, and confirm the reply reaches the sender. No configuration is involved; this
+   is purely a check that the mailbox works.
+   [DEPLOYMENT.md §5.1](./DEPLOYMENT.md#51-post-deploy-verification).
 2. ~~Close BLK-02~~ — **done.** Email confirmed and published.
 3. ~~Close BLK-03~~ — **done.** Logo supplied and integrated. Optional: supply vector (SVG) art
    to replace the generated favicon and social card.
@@ -632,3 +644,92 @@ All eight implementation stages are complete. What remains is not development:
 
 Items 1–4 are the launch gate. Item 5 without them would publish a site whose contact form cannot
 accept an enquiry and whose legal pages still contain unresolved markers.
+
+---
+
+## Post-Stage-8: direct email contact
+
+The founder approved replacing the enquiry form with direct email, applying the parent-logo
+lockup, and finishing the remaining website work. Recorded here because the previous section
+describes code that no longer exists.
+
+### What was removed
+
+| Path | What it was |
+| --- | --- |
+| `src/app/api/enquiry/route.ts` | `POST` endpoint: validation, honeypot, timing check, rate limit, delivery |
+| `src/components/forms/EnquiryForm.tsx`, `fields.tsx` | The seven-field client form |
+| `src/lib/enquiry-delivery.ts` | Delivery adapter (`resend` / `webhook` / `console`) |
+| `src/lib/enquiry-schema.ts`, `rate-limit.ts`, `sanitise.ts` | Validation, per-IP limiting, value normalisation |
+| `public/brand/obsidixz-logo-on-*.png` | Replaced by the parent artwork with its padding preserved |
+| Six `ENQUIRY_*` / `RESEND_*` variables | No longer read by any code |
+
+**Not touched:** the separate `obsidixz-forms` repository. Its code, deployment and infrastructure
+were not modified.
+
+### What was added
+
+| Path | Purpose |
+| --- | --- |
+| `src/components/contact/ContactEmailActions.tsx` | `mailto:` action, visible selectable address, copy button, two honest feedback states |
+| `public/brand/obsidixz-parent-logo-on-{light,dark}.png` | Re-cut from the supplied 2000×1500 artwork, padding preserved |
+| `scripts/prepare-brand-assets.mjs` | Reproducible re-cut, so the asset can be regenerated rather than hand-edited |
+| `scripts/check-copy-feedback.mjs` | Asserts all six copy-feedback branches |
+
+### Email verification
+
+This is the distinction the whole change turns on. These are **two different things** and only the
+first has been verified.
+
+#### A. Website interaction — verified here
+
+| Check | Result |
+| --- | --- |
+| `mailto:` recipient is exactly `obsidixz.realestate@outlook.com` | ✅ asserted in `npm run smoke` |
+| Subject decodes to `Obsidixz Real Estate — Website enquiry` | ✅ asserted |
+| Address present as selectable text, not only in the link | ✅ asserted |
+| Copy control present and labelled | ✅ asserted |
+| No delivery/receipt confirmation anywhere on the page | ✅ asserted |
+| Copy success branch → "Email address copied" | ✅ asserted, 6 branches |
+| Copy failure branch → "Couldn’t copy. Please select and copy the email address above." | ✅ asserted, 4 of the 6 branches |
+| Address is keyboard reachable in the failure path | ✅ asserted in `npm run a11y` |
+| Lockup announces one accessible name | ✅ asserted |
+
+#### B. Inbox receipt and reply — **not verified**
+
+| Check | Result |
+| --- | --- |
+| A message sent to `obsidixz.realestate@outlook.com` arrives | ⬜ **Not tested** |
+| A reply sent from that Outlook account reaches the sender | ⬜ **Not tested** |
+
+Neither can be established from this environment, and neither is implied by anything in table A.
+Opening a `mailto:` draft is not evidence of delivery. **BLK-01 remains open.**
+
+### Checks run for this change
+
+| Check | Result |
+| --- | --- |
+| `npm run typecheck` | ✅ clean |
+| `npm run lint` | ✅ clean |
+| `npm run layout` | ✅ **35/35** (was 26; +9 for the lockup and the address panel) |
+| `npm run a11y` | ✅ all pass |
+| `npm run copy-feedback` | ✅ 6/6 branches |
+| `npm run build` | ✅ all 13 routes static |
+| `npm run smoke` | ✅ **138/138** |
+| `npm run perf` | ✅ 28/28 |
+
+Two real defects were found by these checks rather than by inspection:
+
+1. **The business address overflowed its panel at 320px.** Caught by the new layout assertion;
+   fixed by stepping the type down below `sm` rather than relying on `break-all`.
+2. **"Other ways to reach us" listed only operating hours.** Once email became the only route the
+   heading was false; renamed to "How we reply".
+
+### Verification still outstanding
+
+| Item | Why |
+| --- | --- |
+| Real-browser rendering at 320 / 360 / 768 / 1024 / 1440 px | No browser engine in this environment |
+| Screen-reader pass over the new contact section | Structure and ARIA verified statically only |
+| Keyboard-only walk through the copy failure state | Logic asserted; the interaction itself needs a browser |
+| Incoming email and reply delivery | Needs a second email account; see B above |

@@ -6,7 +6,7 @@ import { privacySections } from '@/lib/legal';
 export const metadata: Metadata = buildMetadata({
   title: 'Privacy Policy',
   description:
-    'How Obsidixz Real Estate handles information submitted through the website enquiry form, what is collected during ordinary website operation, and how to make a privacy request.',
+    'How Obsidixz Real Estate handles information you send by email, what is involved in ordinary email delivery, and how to make a privacy request.',
   path: '/privacy-policy',
 });
 

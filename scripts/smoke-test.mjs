@@ -24,9 +24,9 @@
  *   8. JSON-LD parses and contains only verified fields.
  *   9. robots.txt and sitemap.xml are correct and complete.
  *  10. Security headers are present.
- *  11. The enquiry API rejects invalid input, and never reports success when
- *      delivery is unconfigured. A local mock receiver proves the configured
- *      success path end to end.
+ *  11. The contact route is direct email: the mailto link, its recipient and
+ *      subject are correct, the address is visible and selectable, and no
+ *      delivery confirmation is ever presented to the visitor.
  *
  * Exit code is non-zero if any check fails.
  */
@@ -417,7 +417,10 @@ async function main() {
     const { res, body } = await get('/robots.txt');
     record('seo', 'robots.txt returns 200', res.status === 200);
     record('seo', 'robots.txt declares sitemap', /Sitemap:\s*https:\/\/realestate\.obsidixz\.pp\.ua\/sitemap\.xml/i.test(body));
-    record('seo', 'robots.txt disallows the API', /Disallow:\s*\/api\//i.test(body));
+    // There is no API on this site any more, so nothing needs disallowing. The
+    // check that matters is that crawlers are allowed in and the sitemap is
+    // declared, both asserted above.
+    record('seo', 'robots.txt allows crawling the site', /Allow:\s*\//i.test(body));
   }
   {
     const { res, body } = await get('/sitemap.xml');
@@ -450,119 +453,99 @@ async function main() {
     record('errors', '404 page offers a way back', /href="\/"/.test(body));
   }
 
-  /* 9 — enquiry API */
-  section('9. Enquiry API');
-  // Each case uses a distinct synthetic client IP so the per-IP rate limiter
-  // does not interfere with the assertions below.
-  let ipCounter = 0;
-  const apiPost = async (payload, headers = {}) => {
-    ipCounter += 1;
-    const res = await fetch(`${ORIGIN}/api/enquiry`, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-        'x-forwarded-for': `203.0.113.${ipCounter}`,
-        ...headers,
-      },
-      body: JSON.stringify(payload),
-    });
-    let json = null;
-    try {
-      json = await res.json();
-    } catch {
-      /* non-JSON response */
-    }
-    return { res, json };
-  };
+  /* 9 — contact route: direct email, no form, no false confirmation */
+  section('9. Contact route (direct email)');
+  {
+    const { body: contact } = await get('/contact');
 
-  const validPayload = {
-    fullName: 'Smoke Test',
-    businessEmail: 'smoke.test@example.com',
-    companyName: 'Test Co',
-    enquiryType: 'property-lead-research',
-    targetLocation: 'Franklin County, OH',
-    message: 'Automated verification submission. Please ignore.',
-    privacyAcknowledged: true,
-    formOpenedAt: Date.now() - 8000,
-    website: '',
-  };
-
-  {
-    const { res, json } = await apiPost({ ...validPayload, businessEmail: 'not-an-email' });
-    record('api', 'rejects invalid email', res.status === 400, `HTTP ${res.status} ${json?.error?.code ?? ''}`);
-  }
-  {
-    const { res } = await apiPost({ ...validPayload, fullName: '' });
-    record('api', 'rejects missing required field', res.status === 400, `HTTP ${res.status}`);
-  }
-  {
-    const { res } = await apiPost({ ...validPayload, privacyAcknowledged: false });
-    record('api', 'rejects missing privacy acknowledgement', res.status === 400, `HTTP ${res.status}`);
-  }
-  {
-    // A filled honeypot is accepted-looking but never delivered. No reference is
-    // returned, so nothing that reaches this branch can be mistaken for success.
-    const { res, json } = await apiPost({ ...validPayload, website: 'http://spam.example' });
+    const mailto = contact.match(/href="(mailto:[^"]+)"/)?.[1] ?? null;
+    const decodedMailto = mailto ? decode(mailto) : null;
     record(
-      'api',
-      'honeypot submissions are discarded, not delivered',
-      json?.discarded === true && json?.ok !== true,
-      `HTTP ${res.status} discarded=${json?.discarded === true}`,
+      'contact',
+      'contact page publishes a mailto link',
+      Boolean(decodedMailto),
+      decodedMailto ?? 'no mailto href found',
+    );
+
+    const expectedRecipient = 'obsidixz.realestate@outlook.com';
+    record(
+      'contact',
+      'mailto recipient is the confirmed business mailbox',
+      decodedMailto !== null && decodedMailto.startsWith(`mailto:${expectedRecipient}`),
+      decodedMailto ?? '',
+    );
+
+    const subject = decodedMailto?.match(/[?&]subject=([^&]*)/)?.[1] ?? '';
+    const subjectText = subject ? decodeURIComponent(subject.replace(/\+/g, ' ')) : '';
+    record(
+      'contact',
+      'mailto subject is pre-filled and names the business',
+      /Obsidixz Real Estate/.test(subjectText) && /enquiry/i.test(subjectText),
+      subjectText || 'no subject parameter',
+    );
+
+    record(
+      'contact',
+      'the full address is visible as text, not only inside the link',
+      contact.includes(`>${expectedRecipient}<`),
+    );
+
+    record(
+      'contact',
+      'a copy-address control is present',
+      /Copy email address/.test(contact),
+    );
+
+    /* The central promise: never claim a message was sent. */
+    record(
+      'contact',
+      'no delivery or receipt confirmation appears anywhere on the page',
+      !/\b(enquiry sent|message sent|received your|we have received|thanks, we|thank you, we)\b/i.test(
+        contact.replace(/<[^>]+>/g, ' '),
+      ),
+    );
+
+    /* Obsolete integration must be gone. */
+    const { res: gone } = await fetch(`${ORIGIN}/api/enquiry`, { method: 'POST' }).then(
+      async (res) => ({ res }),
+      () => ({ res: { status: 0 } }),
+    );
+    record(
+      'contact',
+      'the old enquiry endpoint no longer exists',
+      gone.status === 404,
+      `HTTP ${gone.status}`,
     );
   }
+
+  /* 10 — brand lockup */
+  section('10. Brand lockup');
   {
-    const { res, json } = await apiPost({ ...validPayload, formOpenedAt: Date.now() });
+    const { body: home } = await get('/');
+    const logo = home.match(/<img[^>]*obsidixz-parent-logo-on-light[^>]*>/)?.[0] ?? '';
+    record('brand', 'parent logo artwork is used in the header', Boolean(logo));
     record(
-      'api',
-      'implausibly fast submissions are discarded',
-      json?.discarded === true && json?.ok !== true,
-      `HTTP ${res.status} discarded=${json?.discarded === true}`,
+      'brand',
+      'header logo link is named "Obsidixz Real Estate home"',
+      /aria-label="Obsidixz Real Estate home"/.test(home),
+    );
+    record(
+      'brand',
+      'the "Real Estate" label sits alongside the logo',
+      /Real Estate<\/span>/.test(home),
+    );
+    record(
+      'brand',
+      'parent artwork keeps its intrinsic aspect ratio',
+      /width="931"/.test(logo) && /height="785"/.test(logo),
+      logo.slice(0, 140),
+    );
+    record(
+      'brand',
+      'logo image is decorative so nothing is announced twice',
+      /alt=""/.test(logo) && /aria-hidden="true"/.test(logo),
     );
   }
-  {
-    const res = await fetch(`${ORIGIN}/api/enquiry`, { method: 'GET' });
-    record('api', 'GET on the enquiry route is rejected', res.status === 405, `HTTP ${res.status}`);
-  }
-  {
-    // Default configuration must never claim success.
-    const { res, json } = await apiPost(validPayload);
-    const configured = ['webhook'].includes(process.env.ENQUIRY_DELIVERY_MODE ?? '');
-    if (configured) {
-      record('api', 'valid submission accepted when configured', res.status === 200 || res.status === 502, `HTTP ${res.status}`);
-    } else {
-      record(
-        'api',
-        'unconfigured delivery never reports success',
-        res.status !== 200 && json?.ok !== true,
-        `HTTP ${res.status} code=${json?.error?.code ?? 'n/a'}`,
-      );
-      record('api', 'unconfigured delivery explains itself', json?.error?.code === 'delivery_not_configured', JSON.stringify(json?.error ?? {}).slice(0, 120));
-    }
-  }
-
-  /* 10 — configured delivery path, proven against a local mock */
-  section('10. Configured delivery (local mock receiver)');
-  const http = await import('node:http');
-  let received = null;
-  const mock = http.createServer((req, res) => {
-    let raw = '';
-    req.on('data', (chunk) => {
-      raw += chunk;
-    });
-    req.on('end', () => {
-      received = { method: req.method, headers: req.headers, body: raw };
-      res.writeHead(200, { 'content-type': 'application/json' });
-      res.end('{"ok":true}');
-    });
-  });
-  await new Promise((resolve) => mock.listen(MOCK_PORT, '127.0.0.1', resolve));
-  record(
-    'delivery',
-    'mock receiver available (run the app with ENQUIRY_DELIVERY_MODE=webhook to exercise it)',
-    true,
-    `listening on 127.0.0.1:${MOCK_PORT}`,
-  );
-  await new Promise((resolve) => mock.close(resolve));
 
   /* Summary */
   const passed = results.filter((r) => r.ok).length;

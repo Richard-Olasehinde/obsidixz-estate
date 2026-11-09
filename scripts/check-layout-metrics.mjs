@@ -190,23 +190,53 @@ for (const vw of [360, 390, 768, 1024, 1280, 1440]) {
 
 /* --- Header: logo + nav + CTA must fit on one line -------------------- */
 /*
- * The header logo is now the supplied artwork, not a type lockup. Its rendered
- * width is fixed at 160 CSS px by LogoLockup (LOCKUP_WIDTH), which is the value
- * measured here. The previous calculation modelled the text lockup and would
- * silently stop testing the real thing.
+ * The header logo is the approved parent artwork plus the "Real Estate"
+ * secondary label. The artwork width is the Tailwind class on the image
+ * (`w-20 sm:w-24 lg:w-28`), so the measured width must be the *resolved* width
+ * at each viewport, not a single constant. The label is measured with the real
+ * Montserrat metrics at its own breakpoint size, plus the `gap-1.5` (6px)
+ * between logo and label.
+ *
+ * If the artwork sizes or the label change, these constants must change with
+ * them or this check silently stops testing the real thing.
  */
-const LOGO_RENDER_WIDTH = 160; // must match LOCKUP_WIDTH in src/components/brand/LogoLockup.tsx
+const LOCKUP_GAP = 6; // gap-1.5
+const LOGO_WIDTH_AT = (vw) => (vw >= 1024 ? 112 : vw >= 640 ? 96 : 80); // w-28 / w-24 / w-20
+const LABEL_SIZE_AT = (vw) => (vw >= 640 ? 14 : 12); // text-sm / text-xs
+
 for (const vw of [1280, 1440, 1920]) {
   const content = contentWidth(vw);
   const navLabels = ['Home', 'About Us', 'Services', 'How It Works', 'Who We Serve', 'Contact'];
   const navWidth = navLabels.reduce((sum, label) => sum + OPEN_SANS.width(label, 14.72), 0) + 7 * 28;
-  const logoWidth = LOGO_RENDER_WIDTH;
+  const logoWidth = LOGO_WIDTH_AT(vw);
+  const labelWidth = MONSERRAT.width('Real Estate', LABEL_SIZE_AT(vw), 0.02);
+  const lockupWidth = logoWidth + LOCKUP_GAP + labelWidth;
   const ctaWidth = OPEN_SANS.width('Discuss Your Requirements', 15.2) + 48;
-  const total = logoWidth + 24 + navWidth + 24 + ctaWidth;
+  const total = lockupWidth + 24 + navWidth + 24 + ctaWidth;
   check(
     `header fits on one line at ${vw}px`,
     total <= content,
-    `logo(${LOGO_RENDER_WIDTH})+nav+cta = ${total.toFixed(0)}px, content = ${content.toFixed(0)}px`,
+    `lockup(${lockupWidth.toFixed(0)}=logo ${logoWidth}+gap+label ${labelWidth.toFixed(0)})+nav+cta = ${total.toFixed(0)}px, content = ${content.toFixed(0)}px`,
+  );
+}
+
+/*
+ * Narrow screens: the lockup and the 44px menu control share one row. The
+ * label must never wrap underneath the mark or force the mark to shrink, so
+ * the lockup has to fit beside the control with the container gutter intact.
+ */
+for (const vw of [320, 360, 375, 414, 768]) {
+  const gutter = vw >= 1024 ? 48 : vw >= 640 ? 40 : 20;
+  const content = vw - gutter * 2;
+  const logoWidth = LOGO_WIDTH_AT(vw);
+  const labelWidth = MONSERRAT.width('Real Estate', LABEL_SIZE_AT(vw), 0.02);
+  const lockupWidth = logoWidth + LOCKUP_GAP + labelWidth;
+  const controlWidth = 44;
+  const gap = 16;
+  check(
+    `lockup fits beside the menu control at ${vw}px`,
+    lockupWidth + gap + controlWidth <= content,
+    `lockup ${lockupWidth.toFixed(0)}px + gap ${gap} + control ${controlWidth} = ${(lockupWidth + gap + controlWidth).toFixed(0)}px, content ${content.toFixed(0)}px`,
   );
 }
 
@@ -253,6 +283,27 @@ assertFits(
   16.32,
   cellInner(768, 3, 56),
 );
+/*
+ * The business address is a single unbreakable token. If it does not fit the
+ * panel it breaks mid-address, which is legible but ugly. Measure it against
+ * the panel's real inner width at the narrowest supported viewport.
+ */
+for (const [vw, sizeRem, label] of [
+  [320, 0.86, 'narrow step'],
+  [360, 0.86, 'narrow step'],
+  [640, 1.05, 'sm and up'],
+  [1280, 1.05, 'sm and up'],
+]) {
+  const gutter = 20;
+  const content = vw - gutter * 2;
+  const panelInner = content - 20 * 2 - 2; // px-5 both sides + 1px borders
+  check(
+    `business email fits the address panel at ${vw}px (${label})`,
+    MONSERRAT.width('obsidixz.realestate@outlook.com', sizeRem * 16) <= panelInner,
+    `${MONSERRAT.width('obsidixz.realestate@outlook.com', sizeRem * 16).toFixed(0)}px of ${panelInner.toFixed(0)}px`,
+  );
+}
+
 assertFits(
   'intro labels fit their 9rem column',
   ['What we do', 'Who it is for', 'How it is done'],

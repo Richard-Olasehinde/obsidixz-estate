@@ -40,14 +40,16 @@ SITE_ORIGIN=http://localhost:3000 npm run perf   # 28 performance budget checks
 | Requirement | Value |
 | --- | --- |
 | Node.js | **20.9 or newer** (developed on 22) |
-| Build output | `.next/` — one server process plus prerendered pages |
+| Build output | `.next/` — **every route prerendered to static HTML** |
 | Database | **None** |
 | Background workers / cron | **None** |
-| Filesystem writes | **None** at runtime (the rate limiter holds state in memory only) |
-| Required ports | One HTTP port (host-provided `PORT`) |
+| Filesystem writes | **None** at runtime |
+| Server runtime | **Not required** — see below |
 
-Everything except `/api/enquiry` and `/contact` is prerendered to static HTML. The contact page is
-dynamic so its delivery status is always truthful.
+All thirteen routes are marked `○ (Static)` by `next build`. There is no API route, no server
+action and no dynamic page, so **the site can be hosted as static files** on any static host, CDN
+or object store, as well as on a Node host. This is a direct consequence of moving contact to the
+visitor's own email application.
 
 ---
 
@@ -91,58 +93,52 @@ Full reference: [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md). For production, 
 | Variable | Required | Value |
 | --- | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | **Yes** | `https://realestate.obsidixz.pp.ua` — no trailing slash |
-| `ENQUIRY_DELIVERY_MODE` | **Yes** | `webhook` |
-| `ENQUIRY_WEBHOOK_URL` | **Yes** | Your destination endpoint (see §5) |
-| `ENQUIRY_WEBHOOK_TOKEN` | If required | Bearer token, server-side only |
-| `ENQUIRY_WEBHOOK_TIMEOUT_MS` | No | Default `10000` |
-| `ENQUIRY_RATE_LIMIT_MAX` | No | Default `5` |
-| `ENQUIRY_RATE_LIMIT_WINDOW_MINUTES` | No | Default `60` |
-| `NEXT_PUBLIC_BUSINESS_EMAIL` | Recommended | The monitored business mailbox |
+| `NEXT_PUBLIC_BUSINESS_EMAIL` | No | Defaults to `obsidixz.realestate@outlook.com` |
 | `NEXT_PUBLIC_BUSINESS_PHONE` | No | Only if a business number should be published |
 
-`ENQUIRY_DELIVERY_MODE=console` is **refused** when `NODE_ENV=production`, deliberately, so a live
-site can never send enquiries into a log nobody reads.
+**That is the complete list.** There are no credentials, no API keys and no third-party accounts.
+Both values are public and are rendered into the HTML.
 
 ---
 
-## 5. Contact form activation
+## 5. Contact route
 
-The form is fully implemented but will report honestly that submission is unavailable until a
-destination exists.
+There is nothing to activate. Contact works the moment the site is served.
 
-**Recommended: Resend transactional email.** One account, no third-party form service, and the
-confirmation email goes straight to `obsidixz.realestate@outlook.com`. Full setup — account,
-domain verification, DNS records, variables and the manual confirmation step — is in
-[ENVIRONMENT_SETUP.md §5](./ENVIRONMENT_SETUP.md#5-resend-transactional-email). In short:
-
-```dotenv
-ENQUIRY_DELIVERY_MODE=resend
-RESEND_API_KEY=re_xxxxxxxxxxxx
-ENQUIRY_FROM_EMAIL=enquiries@send.realestate.obsidixz.pp.ua
-ENQUIRY_TO_EMAIL=obsidixz.realestate@outlook.com
+```
+visitor's mail client  ──►  obsidixz.realestate@outlook.com  ──►  reply from the same mailbox
 ```
 
-**Alternative: a generic webhook.** Anything that accepts `POST` with a JSON body and returns
-`2xx`:
-   - *Formspree* — free tier, one signup, gives `https://formspree.io/f/xxxxxxxx`
-   - *Formspark*, *Basin* — similar
-   - *Make / Zapier / n8n* — a webhook that forwards to email or a spreadsheet
-   - Your own CRM intake endpoint or serverless function
+The site publishes the address, offers a `mailto:` link pre-filled with a subject, and shows the
+address as selectable text with a copy button. It sends nothing, receives nothing, stores nothing
+and cannot know whether a message was written or delivered — so it never claims otherwise.
 
-2. **Set the variables** (§4) and redeploy.
+### 5.1 Post-deploy verification
 
-3. **Send one real enquiry** through the live form. Confirm:
-   - it arrives at the destination;
-   - the browser shows the success state (only shown on a genuine `2xx`);
-   - the reference shown on screen matches the `reference` field in the payload.
+**Website behaviour** — automatable, and covered by `npm run smoke` against the deployed origin:
 
-   > **For Resend, this step is mandatory and cannot be skipped.** A `200` only means Resend
-   > accepted the message; it does not prove arrival. Do not record delivery as working — and do
-   > not close **BLK-01** — until the email is visibly present in
-   > `obsidixz.realestate@outlook.com`, checked including the spam folder.
+- `/contact` returns 200 and publishes a `mailto:` link whose recipient is exactly
+  `obsidixz.realestate@outlook.com`;
+- the subject parameter decodes to `Obsidixz Real Estate — Website enquiry`;
+- the address appears as text in the document, not only inside the link;
+- a copy control is present;
+- no delivery or receipt confirmation appears anywhere on the page.
 
-4. If it fails, the visitor sees an honest failure message and their text stays in the form. Check
-   the server log: failures are logged with the reference and the upstream status.
+**Inbox behaviour** — *cannot* be automated and must be done by a person:
+
+1. From an email account that is **not** the business mailbox, send a message to
+   `obsidixz.realestate@outlook.com`.
+2. Confirm it arrives, checking the junk folder too.
+3. Reply to it from that Outlook account.
+4. Confirm the reply reaches the original sender.
+
+Only after all four steps may incoming and reply delivery be described as verified. See
+[DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md#email-verification) for the current state of that
+check.
+
+> A `mailto:` link opening a draft is **not** evidence of delivery. Neither is a rendered page.
+
+
 
 The JSON body sent is documented in [ENVIRONMENT_SETUP.md](./ENVIRONMENT_SETUP.md#4-switching-the-contact-form-on),
 so a destination can be mapped without reading the source.
@@ -170,21 +166,25 @@ apply here.
 
 ### Consequences for this project
 
-1. **Never add Resend's MX to the apex.** It would take over inbound mail for
-   `obsidixz.pp.ua` and break Zoho. Resend's MX belongs on `send.realestate` only.
-2. **Never add `include:amazonses.com` to the apex SPF.** It is unnecessary — SPF is published on
-   `send.realestate` and relaxed alignment covers it.
-3. **Do not modify the existing `_dmarc.obsidixz.pp.ua`.** It is in use. A separate
-   `_dmarc.realestate.obsidixz.pp.ua` can be added without touching it.
-4. **`realestate` has no record at all**, so it resolves to nothing. This blocks adding it as a
-   Resend domain until something exists there.
+1. **Never put any third-party mail service's MX on the apex.** It would take over inbound mail
+   for `obsidixz.pp.ua` and break Zoho.
+2. **Never create a second apex SPF record.** There is exactly one, and it includes Zoho.
+3. **Do not modify the existing `_dmarc.obsidixz.pp.ua`.** It is in use.
+4. **`realestate` has no record at all**, so it resolves to nothing. It needs a site record before
+   the domain will serve anything.
 
-### GitHub Pages cannot host this site
+The sending-subdomain records described in earlier revisions of this document are no longer used
+by the site. They remain harmless and may be left in place or removed at leisure; **nothing in the
+application depends on them.** Do not add new ones.
 
-The apex is served by GitHub Pages, which is static. This application needs a Node runtime for
-`/api/enquiry`. A static export would delete server-side validation, the rate limiter and
-secret-safe delivery (see §3 Option C and decision D44). **`realestate.obsidixz.pp.ua` must point
-at a Node host** — Vercel being the least configuration.
+### The site no longer needs a Node runtime
+
+`next build` reports **every route as `○ (Static)`**. The former `/api/enquiry` endpoint — the only
+thing that required a server — has been removed. **`realestate.obsidixz.pp.ua` can therefore be
+served from any static host, including GitHub Pages**, which the parent apex already uses.
+
+That is a change from earlier guidance in this document, which stated a Node host was mandatory.
+It was true while the enquiry form had a server-side delivery path. It is not true now.
 
 ---
 
@@ -211,22 +211,21 @@ that hosts `obsidixz.pp.ua`** — you do not register `realestate.obsidixz.pp.ua
 6. **Only after the domain resolves**, confirm `NEXT_PUBLIC_SITE_URL` matches it exactly. If it is
    wrong, canonicals, the sitemap and Open Graph URLs will all point to the wrong host.
 
-### DNS records for email sending
+### DNS records for the website
 
-The site's DNS and the sending-domain DNS live on the same zone but must not collide. Publishing
-the Resend records on the **apex** of `realestate.obsidixz.pp.ua` would take over its inbound mail;
-they belong on a `send.` subdomain. See [ENVIRONMENT_SETUP.md §5.3](./ENVIRONMENT_SETUP.md#53-account-and-domain-setup)
-for the exact values, which Resend generates and you copy.
+Only one record is needed: point `realestate` at whatever serves the built site.
 
-| Type | Name | Purpose |
+| Type | Name | Value |
 | --- | --- | --- |
-| `MX` | `send.realestate` | Bounce handling / Return-Path |
-| `TXT` | `send.realestate` | SPF |
-| `TXT` | `resend._domainkey.send.realestate` | DKIM |
-| `TXT` | `_dmarc.realestate` | DMARC (`p=none` to start) |
+| `CNAME` | `realestate` | The static host or Node host that serves the build |
 
-The site records (`CNAME`/`A` for `realestate`) and the mail records (`send.realestate`) are
-independent: adding the mail records does not affect site hosting, and vice versa.
+**No email records are required.** Contact runs through the visitor's own email application to an
+Outlook mailbox, neither of which lives on this zone. Nothing needs to be added to
+`obsidixz.pp.ua` or to `realestate.obsidixz.pp.ua` beyond the site record itself.
+
+A reminder for anything added at uadns later: a **CNAME target must end with a trailing dot**, or
+the zone name is appended and the record silently fails to resolve. That fault was encountered and
+diagnosed on this project already.
 
 ### Canonical host — confirmed
 
@@ -279,10 +278,9 @@ Then check by hand:
 | Re-run the verification suite | After any change | `npm run check`, then `npm run smoke` against a served build |
 | Update contrast or layout if copy changes | After editing long copy or headings | `npm run layout` measures the strings it knows about; add new long strings to `scripts/check-layout-metrics.mjs` |
 | Refresh the social card | If positioning changes | `./scripts/generate-og-image.sh` (needs ImageMagick + fonttools) |
-| Rotate the webhook token | If it is ever exposed | Change it at the destination, update the host env, redeploy. Rotate first — the old value is already public. |
-| Rotate the Resend API key | Immediately if it is ever exposed, or every 6 months | Create a new key in Resend, update `RESEND_API_KEY` on the host, redeploy, then revoke the old key. Rotating first matters: the old key is already public. |
-| Check the Resend domain stays verified | Monthly | Resend dashboard → Domains. If it flips to pending, a DNS record was changed or removed. |
-| Check the sending reputation | Monthly | Resend dashboard → Emails. Watch for a rise in bounces or complaints; both damage deliverability for the Outlook inbox. |
+| Check the business mailbox still receives | Monthly | Send a test message from an unrelated account and confirm it lands. Free mailboxes can lapse if unused; this is the single point of failure for contact. |
+| Check the reply path | After any mailbox change | Reply to a test message from the Outlook account and confirm the reply reaches the sender. |
+| Verify the published address | After any `NEXT_PUBLIC_BUSINESS_EMAIL` change | `npm run smoke` asserts the `mailto:` recipient, so a stale address fails the suite. |
 | Review legal pages | Before launch and after any change to data handling | See the legal review register in [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md) |
 
 ---
@@ -304,11 +302,12 @@ Copy this into an issue and tick it off.
 
 ### Must be done — the site is not honestly launchable without these
 
-- [ ] **Enquiry destination configured and tested** (`ENQUIRY_DELIVERY_MODE=webhook`,
-      `ENQUIRY_WEBHOOK_URL` set; one real enquiry received). Without this the form tells visitors
-      enquiries are unavailable. **BLK-01**
-- [ ] **Business email supplied** (`NEXT_PUBLIC_BUSINESS_EMAIL`) and confirmed to be monitored.
-      **BLK-02**
+- [x] **Contact route built and verified on the website side** — `mailto:` recipient and subject
+      asserted by `npm run smoke`; visible address and copy fallback verified by `npm run a11y`
+      and `npm run copy-feedback`.
+- [ ] **Incoming email reaches the Outlook mailbox, and replies leave it.** Human check, four
+      steps, in §5.1. **BLK-01** — do not describe email delivery as verified until this is ticked.
+- [x] **Business email supplied** — `obsidixz.realestate@outlook.com`. **BLK-02**
 - [ ] **Legal pages reviewed** and all nine `to be confirmed` markers resolved by the founder
       and, where appropriate, a qualified adviser. **LR-01 … LR-09**
 - [ ] **`NEXT_PUBLIC_SITE_URL` set to the production domain** exactly.

@@ -53,27 +53,23 @@ export const privacySections: LegalSection[] = [
   },
   {
     id: 'information-you-give-us',
-    heading: '2. Information you submit through this website',
+    heading: '2. Information you send us by email',
     blocks: [
       {
         kind: 'paragraph',
-        text: 'The website collects personal information only through the enquiry form. The form asks for:',
-      },
-      {
-        kind: 'list',
-        items: [
-          'Full name — required, so we can address our reply correctly.',
-          'Business email address — required, so we can respond to your enquiry.',
-          'Company name — optional. Omit it if you are enquiring as an individual.',
-          'Enquiry type — required, so your message reaches the right context.',
-          'Target US location — optional. It helps us judge whether we can research the area you are interested in.',
-          'Requirements and message — required. This is the substance of your enquiry.',
-          'Privacy acknowledgement — required, confirming you have read this policy.',
-        ],
+        text: 'This website does not have an enquiry form and does not collect personal information itself. It publishes an email address and a link that opens your own email application. The message is composed and sent by you, from your own email account, to obsidixz.realestate@outlook.com — a Microsoft Outlook mailbox operated by the business.',
       },
       {
         kind: 'paragraph',
-        text: 'Please do not send sensitive personal information through the enquiry form. Property research enquiries do not require it.',
+        text: 'Because you write and send the email yourself, what it contains is up to you. In practice an enquiry usually includes your name, your email address, and what you choose to say about the location and property criteria you are interested in. Your email provider will also transmit ordinary message metadata such as the sending time and routing information, as with any email.',
+      },
+      {
+        kind: 'paragraph',
+        text: 'The website does not receive, record, copy or store the contents of that email. It is held only in your mailbox and in the business mailbox it was sent to.',
+      },
+      {
+        kind: 'paragraph',
+        text: 'Please do not send sensitive personal information such as identity documents, financial account details or government identifiers. Property research enquiries do not require it, and ordinary email is not a suitable channel for it.',
       },
     ],
   },
@@ -83,7 +79,7 @@ export const privacySections: LegalSection[] = [
     blocks: [
       {
         kind: 'paragraph',
-        text: 'Information submitted through the enquiry form is used only to read, consider and respond to your enquiry, and to correspond with you about the research service. We do not use it to send marketing unrelated to your enquiry, and we do not sell it.',
+        text: 'Information you send by email is used only to read, consider and respond to your enquiry, and to correspond with you about the research service. We do not use it to send marketing unrelated to your enquiry, and we do not sell it.',
       },
       {
         kind: 'paragraph',
@@ -101,7 +97,7 @@ export const privacySections: LegalSection[] = [
       },
       {
         kind: 'paragraph',
-        text: 'Because the enquiry form must be protected against automated abuse, the server that accepts submissions records the submitting IP address in memory for rate-limiting purposes. It is used only to limit repeat submissions and is not written to a marketing database. It is held in the server process memory and is discarded when that process restarts.',
+        text: 'This website has no enquiry form and no submission endpoint, so it does not receive a message you write here and it does not rate-limit or record submissions. There is no server-side record of an enquiry on this site to retain.',
       },
       {
         kind: 'paragraph',
@@ -123,12 +119,12 @@ export const privacySections: LegalSection[] = [
     blocks: [
       {
         kind: 'paragraph',
-        text: 'Enquiry submissions are delivered to the destination configured for the website so that a member of the business can read and reply to them. That destination is a service provider acting on our instructions for the purpose of receiving and storing enquiries.',
+        text: 'Enquiries are received in a Microsoft Outlook mailbox. Microsoft provides that mailbox and processes the messages in it as the email provider for the business, under its own terms and data-protection commitments. Replies are sent from the same mailbox.',
       },
-      pending(
-        'Enquiry delivery provider',
-        'The destination for enquiry submissions has not been selected or configured. When it is, its name should be stated here because it will process the information you submit.',
-      ),
+      {
+        kind: 'paragraph',
+        text: 'This is ordinary email. It is not a special or provider-free channel: your own email provider, the business mailbox provider and the networks in between all handle the message in the usual way, and normal spam and security filtering applies to it.',
+      },
       {
         kind: 'paragraph',
         text: 'We do not disclose enquiry information to any other third party except where required by law, or where necessary to protect the security of the website.',
@@ -141,11 +137,11 @@ export const privacySections: LegalSection[] = [
     blocks: [
       {
         kind: 'paragraph',
-        text: 'Reasonable care is taken to protect information submitted through the website. Submissions are transmitted over an encrypted connection when the site is served over HTTPS, are validated before they are accepted, and are delivered to a configured destination rather than being stored in a public place.',
+        text: 'Reasonable care is taken to protect the business mailbox. Access is restricted to the business, and the mailbox provider applies its own security controls. This website holds no enquiry information to protect.',
       },
       {
         kind: 'paragraph',
-        text: 'No service can guarantee absolute security, and email and web transmission carry inherent risks. Please do not send sensitive information such as identity documents, financial account details or government identifiers through the enquiry form.',
+        text: 'No service can guarantee absolute security, and ordinary email carries inherent risks in transit and at rest. Email is not end-to-end encrypted by default, and it can be filtered, delayed or misdelivered. Please do not send sensitive information such as identity documents, financial account details or government identifiers by email.',
       },
     ],
   },
@@ -159,7 +155,7 @@ export const privacySections: LegalSection[] = [
       ),
       {
         kind: 'paragraph',
-        text: 'The rate-limiting record of a submitting IP address is held only for the duration of the rate-limit window, which is configured at 60 minutes by default, and in server memory only.',
+        text: 'Enquiry correspondence exists as email in the business Outlook mailbox and in the sender\'s own mailbox. Its retention in each is governed by the respective provider and by the business\'s own mailbox management. This website holds no copy.',
       },
     ],
   },
@@ -175,10 +171,10 @@ export const privacySections: LegalSection[] = [
         kind: 'paragraph',
         text: 'Depending on where you live, you may have additional rights under applicable data-protection law. We will consider any such request in line with the law that applies to the business.',
       },
-      pending(
-        'Privacy contact route',
-        'A dedicated privacy contact email address has not been supplied. Until one is, privacy requests can be sent through the contact form on this website by selecting "General Business Enquiry" and stating that the message is a privacy request.',
-      ),
+      {
+        kind: 'paragraph',
+        text: 'Privacy requests can be sent by email to obsidixz.realestate@outlook.com. Please state clearly that your message is a privacy request so it is handled as one.',
+      },
       pending(
         'Applicable data-protection framework',
         'The business must confirm which data-protection law governs it, so that the rights described here are accurate rather than generic.',
@@ -201,7 +197,7 @@ export const privacySections: LegalSection[] = [
     blocks: [
       {
         kind: 'paragraph',
-        text: `This policy may be updated as the business develops, for example when a hosting provider or enquiry delivery service is selected. The "last updated" date at the top of this page shows when it last changed. Material changes will be reflected on this page.`,
+        text: `This policy may be updated as the business develops, for example when a hosting provider is selected. The "last updated" date at the top of this page shows when it last changed. Material changes will be reflected on this page.`,
       },
     ],
   },
@@ -211,7 +207,7 @@ export const privacySections: LegalSection[] = [
     blocks: [
       {
         kind: 'paragraph',
-        text: 'Questions about this policy, or requests relating to your information, can be sent to obsidixz.realestate@outlook.com or through the contact form on this website. If you use the form, select "General Business Enquiry" and state that your message concerns privacy.',
+        text: 'Questions about this policy, or requests relating to your information, can be sent by email to obsidixz.realestate@outlook.com. Please state that your message concerns privacy.',
       },
       {
         kind: 'paragraph',
@@ -420,7 +416,7 @@ export const termsSections: LegalSection[] = [
     blocks: [
       {
         kind: 'paragraph',
-        text: 'Questions about these terms can be sent through the contact form on this website by selecting "General Business Enquiry".',
+        text: 'Questions about these terms can be sent by email to obsidixz.realestate@outlook.com.',
       },
     ],
   },

@@ -1,64 +1,85 @@
 import Image from 'next/image';
 
 /**
- * OBSIDIXZ LOGO LOCKUP
- * ====================
+ * OBSIDIXZ parent brand lockup, with the "Real Estate" secondary label.
  *
- * Renders the approved Obsidixz logo artwork, supplied by the founder as a
- * transparent PNG pair (2000×1500 RGBA source). No part of the mark is redrawn,
- * recoloured, re-proportioned or approximated: the files in `public/brand/` are
- * the supplied artwork with surrounding transparent padding trimmed and the
- * image downscaled to its display size. Verified pixel-identical to the resized
- * source.
+ * COMPOSITION — and what must not change
+ * The supplied parent logo is a *complete* identity: the interlock-diamond
+ * symbol with the OBSIDIXZ wordmark beneath it. That whole composition is kept
+ * intact. "Real Estate" is placed immediately to its **right**, vertically
+ * centred against the complete logo, as a smaller secondary label.
  *
- * Two variants, chosen by the `tone` prop:
+ * It is explicitly NOT a replacement wordmark and NOT text underneath the logo.
+ * The arrangement is horizontal at every supported width — the label never
+ * wraps below the mark, never forces the mark to clip, and never distorts it.
  *
- *   tone="dark"  (default) → `obsidixz-logo-on-light.png`
- *     Dark square, black OBSIDIXZ wordmark, black-outlined white interlock
- *     diamond. For light backgrounds. Used in the site header.
+ * GEOMETRY
+ * The parent-logo widths (`w-20 sm:w-24 lg:w-28`) and the label sizes
+ * (`text-xs sm:text-sm`) are the approved reference proportions. The image is
+ * always `h-auto`, so its aspect ratio and its transparent padding are
+ * preserved exactly as supplied.
  *
- *   tone="light"           → `obsidixz-logo-on-dark.png`
- *     White square, white OBSIDIXZ wordmark, white-outlined black interlock
- *     diamond. For dark backgrounds. Used in the footer.
+ * LABEL SIZING ON NARROW SCREENS
+ * "Real Estate" is a long label relative to a 80px mark. It is set
+ * `whitespace-nowrap` and allowed to occupy its natural width: at 12px
+ * semibold Montserrat the label measures ~71px, so the whole lockup is ~157px
+ * at the smallest breakpoint. That fits beside the 44px menu control at 320px.
+ * Shrinking, truncating or wrapping it would each be a worse outcome than a
+ * slightly wider lockup.
  *
- * Accessibility: the artwork contains the wordmark text, so the image itself is
- * `alt=""` and `aria-hidden`. The surrounding link supplies the accessible name
- * (`aria-label="Obsidixz Real Estate — home"`). This avoids the screen reader
- * announcing "Obsidixz" twice.
- *
- * The supplied artwork is PNG, not SVG. If vector source is ever provided, drop
- * it in as `obsidixz-logo-on-light.svg` / `-on-dark.svg` and switch the two
- * `src` values below; nothing else needs to change.
+ * ACCESSIBILITY
+ * The artwork contains the OBSIDIXZ wordmark and the label repeats the trading
+ * name, so the entire lockup is decorative: the image is `alt=""` plus
+ * `aria-hidden`, and the label is `aria-hidden` too. The surrounding link
+ * supplies the accessible name ("Obsidixz Real Estate home"), so a screen
+ * reader announces the destination once rather than spelling out
+ * "Obsidixz… OBSIDIXZ… Real Estate".
  */
-
-const LOCKUP_WIDTH = 160;
-const LOCKUP_HEIGHT = 132;
 
 type LogoLockupProps = {
   /** `dark` = artwork for light backgrounds. `light` = artwork for dark backgrounds. */
   tone?: 'dark' | 'light';
   className?: string;
-  /** Renders the logo at a smaller size (used where vertical space is tight). */
-  compact?: boolean;
+  /** Hides the "Real Estate" label. Used only where space is genuinely absent. */
+  hideLabel?: boolean;
 };
 
-export function LogoLockup({ tone = 'dark', className = '', compact = false }: LogoLockupProps) {
-  const src = tone === 'light' ? '/brand/obsidixz-logo-on-dark.png' : '/brand/obsidixz-logo-on-light.png';
+/** Intrinsic pixel size of the committed artwork. Aspect ratio must be preserved. */
+const ART_WIDTH = 931;
+const ART_HEIGHT = 785;
 
-  const width = compact ? Math.round(LOCKUP_WIDTH * 0.82) : LOCKUP_WIDTH;
-  const height = compact ? Math.round(LOCKUP_HEIGHT * 0.82) : LOCKUP_HEIGHT;
+export function LogoLockup({ tone = 'dark', className = '', hideLabel = false }: LogoLockupProps) {
+  const src =
+    tone === 'light'
+      ? '/brand/obsidixz-parent-logo-on-dark.png'
+      : '/brand/obsidixz-parent-logo-on-light.png';
 
   return (
-    <Image
-      src={src}
-      alt=""
-      aria-hidden="true"
-      width={width}
-      height={height}
-      priority={tone === 'dark'}
-      sizes={`${width}px`}
-      className={`h-auto w-auto ${className}`}
-      style={{ maxHeight: compact ? 44 : 54 }}
-    />
+    <span className={`inline-flex items-center gap-1.5 ${className}`}>
+      <Image
+        src={src}
+        alt=""
+        aria-hidden="true"
+        width={ART_WIDTH}
+        height={ART_HEIGHT}
+        priority={tone === 'dark'}
+        sizes="(min-width: 1024px) 112px, (min-width: 640px) 96px, 80px"
+        className="h-auto w-20 shrink-0 sm:w-24 lg:w-28"
+      />
+      {hideLabel ? null : (
+        <span
+          aria-hidden="true"
+          className={[
+            'whitespace-nowrap font-display text-xs font-semibold',
+            // 0.02em tracking, as approved.
+            'tracking-[0.02em]',
+            tone === 'light' ? 'text-royal-soft' : 'text-royal',
+            'sm:text-sm',
+          ].join(' ')}
+        >
+          Real Estate
+        </span>
+      )}
+    </span>
   );
 }

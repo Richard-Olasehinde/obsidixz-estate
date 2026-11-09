@@ -9,6 +9,13 @@
   --color-royal: #315c9b;
   --color-royal-deep: #274a7d;
   --color-royal-tint: #eef3fa;
+  /*
+   * Lighter brand blue, for the "Real Estate" label on the dark footer where
+   * --color-royal itself falls below AA. Measured: #315c9b on #111111 is
+   * 2.82:1, which fails; #7fa9dd on #111111 is 7.75:1, which passes AAA. Used
+   * only on a dark surface — on white it would be far too pale.
+   */
+  --color-royal-soft: #7fa9dd;
   --color-gold: #b47745;
   --color-gold-deep: #8a5530; /* AA text: 6.13:1 on white, 5.48:1 on gold-tint, 5.29:1 on mist */
   --color-gold-tint: #f8f1ea;

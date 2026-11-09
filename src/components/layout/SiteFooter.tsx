@@ -12,7 +12,9 @@ export function SiteFooter() {
         <div className="grid gap-12 py-14 sm:py-16 lg:grid-cols-[1.4fr_1fr_1fr] lg:gap-10">
           {/* Brand column */}
           <div className="max-w-sm">
-            <LogoLockup tone="light" />
+            <Link href="/" aria-label="Obsidixz Real Estate home" className="inline-block">
+              <LogoLockup tone="light" />
+            </Link>
             <p className="mt-5 text-[0.95rem] leading-relaxed text-[#a8b3c0]">
               {siteConfig.positioning}
             </p>
@@ -69,9 +71,9 @@ export function SiteFooter() {
               ) : null}
             </ul>
             <p className="mt-6 text-[0.82rem] leading-relaxed text-[#8d98a6]">
-              Enquiries are handled through the{' '}
+              Enquiries are sent by email and answered from the business Outlook mailbox. See{' '}
               <Link href="/contact" className="text-white/90 underline underline-offset-2 hover:text-white">
-                contact form
+                how to reach us
               </Link>
               .
             </p>

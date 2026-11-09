@@ -5,52 +5,17 @@ import { Container } from '@/components/layout/Container';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { PageHero } from '@/components/sections/PageHero';
 import { BreadcrumbData } from '@/components/seo/BreadcrumbData';
-import { EnquiryForm } from '@/components/forms/EnquiryForm';
+import { ContactEmailActions } from '@/components/contact/ContactEmailActions';
 import { Diamond } from '@/components/ui/Motifs';
 import { buildMetadata } from '@/lib/metadata';
-import { businessContact, hasPublicEmail, hasPublicPhone } from '@/lib/site';
-import { isDeliveryConfigured } from '@/lib/enquiry-delivery';
+import { businessContact, hasPublicPhone } from '@/lib/site';
 
 export const metadata: Metadata = buildMetadata({
   title: 'Contact',
   description:
-    'Contact Obsidixz Real Estate about US residential property lead research. Send your target location and requirements, and we will confirm what the research can cover.',
+    'Contact Obsidixz Real Estate by email about US residential property lead research. Send your target location and requirements, and we will confirm what the research can cover.',
   path: '/contact',
 });
-
-// The delivery state is read on the server so the page can state it honestly.
-export const dynamic = 'force-dynamic';
-
-/** An honest status panel: tells the visitor exactly what will happen. */
-function FormStatusNotice() {
-  const configured = isDeliveryConfigured();
-
-  if (configured) {
-    return (
-      <div className="flex gap-3 border-l-4 border-royal bg-royal-tint px-5 py-4">
-        <span aria-hidden="true" className="mt-1.5 h-2 w-2 shrink-0 bg-royal" />
-        <p className="text-[0.9rem] leading-relaxed text-charcoal/85">
-          <span className="font-semibold text-ink">Online enquiries are open.</span> Your enquiry
-          goes directly to the business inbox, and you will see a confirmation only once it has been
-          accepted.
-        </p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex gap-3 border-l-4 border-gold bg-gold-tint px-5 py-4">
-      <span aria-hidden="true" className="mt-1.5 h-2 w-2 shrink-0 bg-gold" />
-      <p className="text-[0.9rem] leading-relaxed text-charcoal/85">
-        <span className="font-semibold text-ink">Online submission is not yet switched on.</span>{' '}
-        You can complete and validate the form, but the business has not yet connected a receiving
-        destination, so submissions cannot be delivered. The form tells you clearly when a
-        submission cannot be sent and keeps your text in place, so nothing is lost. In the meantime,
-        please use the contact routes opposite.
-      </p>
-    </div>
-  );
-}
 
 export default function ContactPage() {
   return (
@@ -60,21 +25,29 @@ export default function ContactPage() {
         eyebrow="Contact"
         title="Discuss your research requirements"
         intro="Tell us the US market you are working and the criteria a property needs to meet. We will confirm what the available records can support, what the deliverable would contain, and what a research proposal would look like for your brief."
-        meta="Enquiries answered in writing · English"
+        meta="Enquiries answered by email · English"
       />
 
-      <Section tone="white" spacing="lg" aria-labelledby="form-heading">
+      <Section tone="white" spacing="lg" aria-labelledby="email-heading">
         <div className="grid gap-10 lg:grid-cols-[1.25fr_1fr] lg:gap-14">
-          {/* Form column */}
+          {/* Primary route */}
           <div className="min-w-0">
-            <span id="form-heading">
-              <SectionHeading eyebrow="Enquiry form" title="Send us your brief" as="h2" />
+            <span id="email-heading">
+              <SectionHeading eyebrow="Email us" title="Send us your brief" as="h2" />
             </span>
-            <div className="mt-6">
-              <FormStatusNotice />
+
+            <div className="mt-7">
+              <ContactEmailActions email={businessContact.email} />
             </div>
-            <div className="mt-6">
-              <EnquiryForm />
+
+            <div className="mt-8 border-l-4 border-royal bg-royal-tint px-5 py-4">
+              <p className="text-[0.9rem] leading-relaxed text-charcoal/85">
+                <span className="font-semibold text-ink">What happens to your email.</span> It is
+                sent from your own email application to{' '}
+                <span className="font-medium text-ink">{businessContact.email}</span>, which is a
+                Microsoft Outlook mailbox. It is read and answered from that mailbox. This website
+                is not involved in sending or receiving it, and it does not keep a copy.
+              </p>
             </div>
           </div>
 
@@ -104,41 +77,19 @@ export default function ContactPage() {
               </p>
             </div>
 
-            <div id="other-routes" className="mt-6 border border-charcoal/10 bg-white p-6 sm:p-7">
+            <div className="mt-6 border border-charcoal/10 bg-white p-6 sm:p-7">
+              {/*
+                Email is the only contact route, so this panel does not claim
+                there are "other ways". It states how replies are handled, which
+                is the thing a visitor actually wants to know before writing.
+              */}
               <h2 className="font-display text-[0.72rem] font-bold uppercase tracking-[0.18em] text-royal">
-                Other ways to reach us
+                How we reply
               </h2>
 
               <dl className="mt-4 flex flex-col divide-y divide-charcoal/10">
-                {hasPublicEmail ? (
-                  <div className="py-3 first:pt-0">
-                    <dt className="font-sans text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-charcoal/65">
-                      Email
-                    </dt>
-                    <dd className="mt-1">
-                      <a
-                        href={`mailto:${businessContact.email}`}
-                        className="text-[0.95rem] font-medium text-royal underline underline-offset-2"
-                      >
-                        {businessContact.email}
-                      </a>
-                    </dd>
-                  </div>
-                ) : (
-                  <div className="py-3 first:pt-0">
-                    <dt className="font-sans text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-charcoal/65">
-                      Email
-                    </dt>
-                    <dd className="mt-1 text-[0.9rem] leading-relaxed text-charcoal/65">
-                      A business address is configured for this site and is published here once the
-                      deployment environment provides it. Enquiries can still be sent through the
-                      form on this page.
-                    </dd>
-                  </div>
-                )}
-
                 {hasPublicPhone ? (
-                  <div className="py-3">
+                  <div className="py-3 first:pt-0">
                     <dt className="font-sans text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-charcoal/65">
                       Telephone
                     </dt>
@@ -153,7 +104,7 @@ export default function ContactPage() {
                   </div>
                 ) : null}
 
-                <div className="py-3">
+                <div className="py-3 first:pt-0">
                   <dt className="font-sans text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-charcoal/65">
                     Operating hours
                   </dt>
@@ -185,13 +136,13 @@ export default function ContactPage() {
           <SectionHeading
             eyebrow="After you send"
             title={<span id="next-heading">What happens next</span>}
-            intro="No chatbot, no automated sequence. A person reads the enquiry and replies."
+            intro="No chatbot, no automated sequence. A person reads the email and replies to it."
           />
           <ol className="mt-10 grid gap-px border border-charcoal/10 bg-charcoal/10 md:grid-cols-3">
             {[
               {
                 title: 'We read it properly',
-                body: 'Your enquiry is read and matched to whatever context already exists, rather than answered with a template.',
+                body: 'Your email is read and matched to whatever context already exists, rather than answered with a template.',
               },
               {
                 title: 'We check the location and criteria',
@@ -199,7 +150,7 @@ export default function ContactPage() {
               },
               {
                 title: 'We reply on scope',
-                body: 'You receive a considered reply covering what the research would cover, what it cannot, and what to do next.',
+                body: 'You receive a considered reply from the same mailbox, covering what the research would cover, what it cannot, and what to do next.',
               },
             ].map((step, index) => (
               <li key={step.title} className="bg-white p-6">

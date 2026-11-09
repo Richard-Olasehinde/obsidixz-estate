@@ -56,7 +56,6 @@ export const businessContact = {
   phone: (process.env.NEXT_PUBLIC_BUSINESS_PHONE ?? '').trim(),
 } as const;
 
-export const hasPublicEmail = businessContact.email.length > 0;
 export const hasPublicPhone = businessContact.phone.length > 0;
 
 /**

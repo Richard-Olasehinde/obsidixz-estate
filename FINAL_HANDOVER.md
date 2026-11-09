@@ -3,11 +3,11 @@
 **Project:** Obsidixz Real Estate — `realestate.obsidixz.pp.ua`
 **Repository:** `Richard-Olasehinde/obsidixz-estate`
 **Branch:** `arena/3d880e89-obsidixz-estate`
-**Final commit:** `557f708`
+**Final commit:** see `git log` — the direct-email round is the latest
 **Date:** 2026-11-06
-**Status:** All eight stages complete, audited and pushed, plus the confirmed-details and Resend
-update. **Two of three blockers are closed.** Not launchable yet — enquiry delivery is not active
-— see §6.
+**Status:** All eight stages complete, plus direct-email contact and the parent-logo lockup.
+**The site is fully static and complete.** Two of three blockers are closed; BLK-01 is open and is
+a four-step human check on the mailbox, not a development task — see §6.
 
 ---
 
@@ -24,13 +24,15 @@ one-line README.
 | Services | `/services` | Static |
 | How It Works | `/how-it-works` | Static |
 | Who We Serve | `/who-we-serve` | Static |
-| Contact | `/contact` | Dynamic (reports live form status) |
+| Contact | `/contact` | Static — `mailto:` action, visible address, copy fallback |
 | Privacy Policy | `/privacy-policy` | Static |
 | Terms of Service | `/terms-of-service` | Static |
 
-Plus `/api/enquiry`, `sitemap.xml`, `robots.txt`, `manifest.webmanifest`, a custom 404, and
-generated Open Graph and favicon assets. Privacy and Terms are linked from the footer only, as
-required.
+Plus `sitemap.xml`, `robots.txt`, `manifest.webmanifest`, a custom 404, and generated Open Graph
+and favicon assets. Privacy and Terms are linked from the footer only, as required.
+
+**Every route is prerendered static.** There is no API route, no server action and no database, so
+the site can be hosted on any static host — including GitHub Pages — or a Node host, interchangeably.
 
 **Stack:** Next.js 16.4.5 (App Router), React 19, Tailwind CSS 4, TypeScript 5.9, self-hosted
 Montserrat and Open Sans. Five runtime dependencies.
@@ -183,15 +185,13 @@ Already the canonical fallback in `src/lib/site.ts`. Now also documented as conf
 `DEPLOYMENT.md`, with the DNS records for the site and for the Resend sending subdomain kept
 explicitly separate.
 
-### Resend
+### Resend — superseded, and since removed
 
-Added as `ENQUIRY_DELIVERY_MODE=resend` inside the existing adapter. Validation, sanitisation,
-honeypot, timing check and rate limiting are untouched. Eleven tests were run against a local mock
-(see `DEVELOPMENT_STATUS.md`); **no real Resend account, verified domain or delivered message was
-tested**, and the documentation says so in three places.
+A `resend` delivery mode was added inside the existing adapter at the time. It was **never
+activated**: Resend refused to verify any `pp.ua` hostname. The form, the API route and the entire
+delivery adapter have since been removed. See §5c.
 
-**BLK-01 remains open.** A `200` from Resend proves Resend accepted the message, not that it
-reached the inbox.
+**BLK-01 remains open**, for a different reason now — see §5c and §6.
 
 ---
 
@@ -203,7 +203,7 @@ reached the inbox.
 
 | ID | Item | Where it shows | What closes it |
 | --- | --- | --- | --- |
-| BLK-01 | Enquiry delivery not active | `/contact`, `/api/enquiry` | Create a Resend account, verify `send.realestate.obsidixz.pp.ua`, set the four variables, **confirm a real message in the Outlook inbox** — `ENVIRONMENT_SETUP.md` §5 |
+| BLK-01 | Incoming/reply email not yet confirmed by hand | `/contact` | Email `obsidixz.realestate@outlook.com` from an unrelated account, confirm arrival including junk, reply from the Outlook account, confirm the reply arrives — `DEPLOYMENT.md` §5.1. No configuration involved |
 | ~~BLK-02~~ | ✅ **Closed** — email confirmed and published | — | — |
 | ~~BLK-03~~ | ✅ **Closed** — logo supplied and integrated | — | Optional: vector (SVG) art for the favicon and social card |
 
@@ -288,3 +288,75 @@ Then deploy following `DEPLOYMENT.md` and work through its 15-point post-deploy 
 Run `npm run check` before any commit and `npm run smoke` against a running server. Both are
 permanent gates, not scratch scripts: they encode the promises of this build, so those promises
 survive an edit made by someone who never read this document.
+
+---
+
+## 5c. Post-handover update — direct email contact and the parent-logo lockup
+
+The founder approved three changes: replace the form with direct Outlook email, apply the approved
+parent logo with a "Real Estate" lockup, and finish the established website work.
+
+### The contact route
+
+```
+visitor's own email application  ──►  obsidixz.realestate@outlook.com  ──►  reply from that mailbox
+```
+
+The website publishes the address, offers a `mailto:` action pre-filled with the subject
+`Obsidixz Real Estate — Website enquiry`, shows the address as selectable text, and offers a copy
+button with honest success and failure messages.
+
+**Removed:** `src/app/api/enquiry/`, `src/components/forms/`, `src/lib/enquiry-delivery.ts`,
+`enquiry-schema.ts`, `rate-limit.ts`, `sanitise.ts`, six `ENQUIRY_*`/`RESEND_*` variables, and the
+`Disallow: /api/` robots rule.
+
+**Not touched:** the separate `obsidixz-forms` project. Its code, deployment and infrastructure
+were not modified.
+
+### Why the form went rather than stayed disabled
+
+It could not be made to work — Resend would not verify a `pp.ua` hostname, and Brevo authenticated
+the sending domain but gated API-key creation behind phone verification that never completed — and
+it was never necessary. A `mailto:` link gets the message to the same inbox with no provider, no
+credential, no account approval, and no failure mode the visitor cannot see.
+
+### What the site will and will not claim
+
+| | |
+| --- | --- |
+| Shows "Email address copied" | Only after a clipboard write resolved |
+| Shows "Couldn't copy…" | On permission denial, insecure origin, or `execCommand` failure |
+| Shows "Enquiry sent" / "Received" | **Never.** Activating a `mailto:` link proves only that a handler was invoked |
+
+### The logo
+
+The parent artwork (symbol **and** OBSIDIXZ wordmark) is used whole, with "Real Estate" to its
+right, vertically centred, at `text-xs sm:text-sm` against `w-20 sm:w-24 lg:w-28`. It is never a
+replacement wordmark, never underneath, and never wraps on narrow screens.
+
+The committed PNGs were re-cut from the supplied 2000×1500 sources by
+`scripts/prepare-brand-assets.mjs`, which crops the outer excess and re-applies a margin
+proportional to the ink box so the supplied transparent padding survives. No rotation, recolour,
+redraw or sharpening. Aspect ratio is preserved and asserted by `npm run smoke`.
+
+### Checks
+
+| Check | Result |
+| --- | --- |
+| `npm run check` (typecheck, lint, layout, a11y, copy-feedback, build) | ✅ pass |
+| `npm run layout` | ✅ 35/35 |
+| `npm run a11y` | ✅ all pass |
+| `npm run copy-feedback` | ✅ 6/6 |
+| `npm run smoke` | ✅ 138/138 |
+| `npm run perf` | ✅ 28/28 |
+| `next build` | ✅ 13/13 routes static |
+
+Two real defects were found by these checks: the address overflowed its panel at 320px, and
+"Other ways to reach us" was left listing only operating hours once email became the sole route.
+
+### What is still unverified
+
+**Incoming receipt and reply delivery.** No message has been confirmed to arrive in
+`obsidixz.realestate@outlook.com`, and no reply has been confirmed to leave it. That is a human
+check needing a second email account. Website interaction checks are not evidence of it. Opening a
+draft is not evidence of delivery.

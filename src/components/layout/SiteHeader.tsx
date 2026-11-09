@@ -53,7 +53,7 @@ export function SiteHeader() {
         <div className="flex h-[4.5rem] items-center justify-between gap-6 lg:h-[5rem]">
           <Link
             href="/"
-            aria-label="Obsidixz Real Estate — home"
+            aria-label="Obsidixz Real Estate home"
             className="shrink-0 leading-none"
           >
             <LogoLockup />

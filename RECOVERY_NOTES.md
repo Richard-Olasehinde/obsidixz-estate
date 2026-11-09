@@ -40,23 +40,23 @@ breach the project's core content rule.
 ```
 Browser
   │
-  ├── Prerendered HTML for 7 of 8 pages (static, cacheable)
+  ├── Prerendered static HTML for all 13 routes (no server runtime required)
   │     └── React 19 server components composed from Section/Container/Card primitives
   │
-  ├── /contact  (dynamic — must report live delivery status)
-  │     └── EnquiryForm (client component): validates with the shared validator,
-  │         POSTs JSON to /api/enquiry, renders loading / success / failure honestly
-  │
-  └── POST /api/enquiry  (Node runtime)
-        ├── method → content-type → 16 KB body cap → per-IP rate limit
-        ├── honeypot → submit-timing
-        ├── validateEnquiryRequest()  ← same module the browser uses
-        └── deliverEnquiry()  →  resend | webhook | console | unconfigured
+  └── /contact
+        └── ContactEmailActions (client component, ~1 KB of logic)
+              ├── <a href="mailto:obsidixz.realestate@outlook.com?subject=…">  ← primary action
+              ├── the address as selectable text                    ← always present
+              └── Copy email address → "Email address copied" | "Couldn't copy…"
 ```
 
-**Key invariant:** success is shown only when the configured destination returns 2xx. With no
-destination, the API returns `503 delivery_not_configured` and the form says so. There is no code
-path that fakes a successful submission.
+There is **no API route, no server action, no database and no sending service**. The site cannot
+send, receive or store an enquiry. The visitor's own email application does the sending, to an
+Outlook mailbox the business reads and replies from.
+
+**Key invariant:** the site never claims a message was sent or received. Activating a `mailto:`
+link proves only that a handler was invoked, so no confirmation is shown — ever. The copy button
+reports success only after a clipboard write actually resolved.
 
 **Validation lives in exactly one file:** `src/lib/enquiry-schema.ts`. Do not add a second copy in
 the form or the route. (Zod was removed on purpose — it cost 120 KB in the browser bundle; see
@@ -94,12 +94,15 @@ foundation in place, five committed verification gates.
 | Layout metrics | `npm run layout` | ✅ 26/26 |
 | Accessibility | `npm run a11y` | ✅ pass |
 | Build | `npm run build` | ✅ pass |
-| Route/SEO/API suite | `npm run smoke` | ✅ 135/135 |
+| Route/SEO/contact suite | `npm run smoke` | ✅ 138/138 |
+| Layout geometry | `npm run layout` | ✅ 35/35 |
+| Copy-feedback branches | `npm run copy-feedback` | ✅ 6/6 |
 | Performance budgets | `npm run perf` | ✅ 28/28 |
 
-Open blockers: enquiry delivery (BLK-01 — Resend account, verified domain, API key, and a real
-message confirmed in the inbox), and the legal review items (LR-01…LR-09). All are listed in
-`DEVELOPMENT_STATUS.md`.
+Open blockers: **BLK-01** — incoming email has never been confirmed to reach
+`obsidixz.realestate@outlook.com`, nor a reply to leave it. This is a four-step human check with no
+configuration involved (see `DEPLOYMENT.md` §5.1). Also the legal review items LR-01…LR-09. All are
+listed in `DEVELOPMENT_STATUS.md`.
 
 **Closed 2026-11-06:** BLK-02 (business email confirmed as `obsidixz.realestate@outlook.com`) and
 BLK-03 (logo supplied and integrated).
@@ -130,9 +133,10 @@ Then, in a fresh Arena conversation, paste:
 
 The likely tasks, in order:
 
-1. **Founder activates Resend** → create the account, verify `send.realestate.obsidixz.pp.ua`, add
-   the DNS records, set the four env vars, send one real enquiry, **find it in the Outlook inbox**,
-   then close BLK-01. See `ENVIRONMENT_SETUP.md` §5.
+1. **Confirm the mailbox works** → from an unrelated account, email
+   `obsidixz.realestate@outlook.com`; confirm arrival (check junk); reply from the Outlook account;
+   confirm the reply arrives. Then close BLK-01. See `DEPLOYMENT.md` §5.1. There is nothing to
+   configure — no account to create, no DNS to add, no key to obtain.
 2. ~~Business email~~ — **done.** Confirmed and published.
 3. ~~Logo~~ — **done.** Supplied and integrated. If vector art arrives later, swap two `src`
    values in `LogoLockup.tsx` and regenerate the favicon and OG card.

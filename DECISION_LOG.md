@@ -675,3 +675,93 @@ status code in this situation would be fabricated, so the ticket must not includ
 This is a second delivery channel offered by Brevo itself, and it should be attempted before any
 change of phone number, before borrowing a foreign number, and before the account is treated as
 blocked.
+
+### D59. Enquiries are sent by the visitor's own email application, not by a form
+
+**Decision:** the enquiry form, its API route and the entire delivery adapter are **removed**. The
+contact page now offers a `mailto:` action, the address as selectable text, and a copy button.
+
+**Why the form was removed rather than left in place:**
+
+1. It could not be made to work. Resend refused to verify any `pp.ua` hostname, and Brevo
+   authenticated `send.realestate.obsidixz.pp.ua` but gated API-key creation behind phone
+   verification that never completed. After two providers and a full DNS campaign, the form's
+   honest state was still "submissions cannot be delivered".
+2. It was never necessary. A mailto link achieves the same outcome — a message from the visitor
+   arriving in the business inbox — with no provider, no credential, no account approval and no
+   failure mode that is invisible to the visitor.
+3. An unreachable form is worse than no form. Every visitor who filled it in and was told
+   "submissions are not available" was lost.
+
+**What this is not:** it is not a claim that ordinary email is provider-free, exempt from filtering,
+or guaranteed. It is ordinary email. It can be filtered, delayed or misfiled. The privacy policy now
+says so explicitly.
+
+### D60. The site never claims an enquiry was sent
+
+**Decision:** no "Enquiry sent", "Received", "Thank you, we have your message" or any other
+delivery confirmation is shown when the `mailto:` link is activated.
+
+**Why:** activating a `mailto:` handler proves only that the browser invoked *something*. It says
+nothing about whether a mail client opened, whether a draft was created, whether the visitor typed
+anything, or whether a message left the outbox. Any confirmation would be a fabrication, and the
+brief for this change forbids it explicitly.
+
+This is the same principle that governed the form: **the site may only state what it can know.**
+
+### D61. No email-application detection — the fallback is always present
+
+**Decision:** the page does not attempt to detect whether an email application is configured.
+
+**Why:** it is not reliably detectable, and a wrong guess fails silently in exactly the case that
+matters. Instead the fallback is unconditional: the address is real selectable text in the document
+whether or not any script runs, and the copy button is always visible rather than revealed on the
+assumption that the mailto failed.
+
+### D62. Copy feedback has two outcomes and both are honest
+
+`Email address copied` only after a clipboard write actually resolved. Otherwise
+`Couldn’t copy. Please select and copy the email address above.`, with focus moved to the address so
+it can be selected immediately.
+
+Failure covers a rejected permission, an insecure origin, and the legacy `execCommand` fallback
+returning false. All six branches are asserted by `npm run copy-feedback` — a check that exists
+because the failure path is the one a reviewer would otherwise never see.
+
+### D63. What was removed, and what was deliberately left alone
+
+**Removed from this repository:** `src/app/api/enquiry/`, `src/components/forms/`,
+`src/lib/enquiry-delivery.ts`, `enquiry-schema.ts`, `rate-limit.ts`, `sanitise.ts`, the superseded
+logo pair, and every environment variable that only served the sending path.
+
+**Not touched:** the separate `obsidixz-forms` project. Its infrastructure, deployment and code are
+outside this repository and were not modified, consistent with the instruction that the website
+work must not disturb it.
+
+**Also removed:** the `Disallow: /api/` rule in `robots.txt`. There is no API any more, so
+disallowing one would be a stale instruction to crawlers.
+
+### D64. The parent logo carries a "Real Estate" label, not a replacement wordmark
+
+**Decision:** the supplied OBSIDIXZ parent logo is used **whole** — symbol and wordmark — with
+"Real Estate" placed immediately to its right, vertically centred, at `text-xs sm:text-sm` against
+parent-logo widths of `w-20 sm:w-24 lg:w-28`.
+
+**Why this composition:** the brief was explicit that the label must remain a smaller secondary
+label, must not replace the wordmark, and must not sit underneath the logo. The arrangement is
+`inline-flex` with `items-center` and `gap-1.5`, matching the reference.
+
+**On narrow screens** the label is `whitespace-nowrap` and keeps its natural width. At 320px the
+whole lockup is ~157px, which sits beside the 44px menu control inside a 280px content column. It
+is not shrunk, truncated or wrapped: each of those would be a worse outcome than a slightly wider
+header. `npm run layout` asserts this at five widths.
+
+**The artwork was re-cut from the supplied files.** The committed 640×528 pair had been trimmed
+hard against the ink. The parent PNGs carry generous transparent padding, and the brief requires it
+be preserved. `scripts/prepare-brand-assets.mjs` crops only the *outer* excess and re-applies a
+margin proportional to the ink box, so the supplied proportion of breathing room is retained. No
+rotation, recolouring, redrawing or sharpening was applied.
+
+**Accessibility:** the image is `alt=""` and `aria-hidden`, the label is `aria-hidden`, and the
+link carries `aria-label="Obsidixz Real Estate home"`. A screen reader announces the destination
+once, rather than spelling out "OBSIDIXZ… Real Estate".

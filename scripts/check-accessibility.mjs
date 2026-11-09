@@ -95,29 +95,50 @@ assert('reduced-motion preferences respected', true, 'media query in globals.css
 assert('html lang declared', /<html[^>]*lang="en-US"/.test(home));
 
 const contact = await (await fetch(`${ORIGIN}/contact`)).text();
-const controls = [...contact.matchAll(/<(input|select|textarea)\b[^>]*>/g)].map((m) => m[0]);
 const ids = [...contact.matchAll(/id="([^"]+)"/g)].map((m) => m[1]);
-const labelFor = [...contact.matchAll(/<label[^>]*for="([^"]+)"/g)].map((m) => m[1]);
-const unlabelled = controls.filter((tag) => {
-  const id = tag.match(/id="([^"]+)"/)?.[1];
-  return id && !labelFor.includes(id) && !/type="(submit|button|hidden)"/.test(tag);
-});
-assert('every form control has a label', unlabelled.length === 0, `${controls.length} controls`);
 
-const described = [...contact.matchAll(/aria-describedby="([^"]+)"/g)]
-  .flatMap((m) => m[1].split(/\s+/))
-  .filter(Boolean);
-const dangling = described.filter((ref) => !ids.includes(ref));
-assert('no dangling aria-describedby references', dangling.length === 0, dangling.join(', '));
-
+/* --- the address must be readable and selectable without scripting --- */
+assert(
+  'business email address is present as selectable text',
+  /obsidixz\.realestate@outlook\.com/.test(contact.replace(/<[^>]+>/g, ' ')),
+);
+assert(
+  'mailto link carries the business address',
+  /href="mailto:obsidixz\.realestate@outlook\.com/.test(contact),
+);
+assert(
+  'fallback address is keyboard reachable',
+  /tabindex="-1"/.test(contact),
+  'address paragraph is programmatically focusable for the copy-failure path',
+);
+assert(
+  'copy control is a real button element',
+  /<button[^>]*type="button"[^>]*>/.test(contact) && /Copy email address/.test(contact),
+);
+assert('copy feedback is a polite live region', /role="status"[^>]*aria-live="polite"/.test(contact));
+assert(
+  'no dangling aria-describedby references',
+  [...contact.matchAll(/aria-describedby="([^"]+)"/g)]
+    .flatMap((m) => m[1].split(/\s+/))
+    .filter(Boolean)
+    .every((ref) => ids.includes(ref)),
+);
 const labelledBy = [...contact.matchAll(/aria-labelledby="([^"]+)"/g)].map((m) => m[1]);
 assert('no dangling aria-labelledby references', labelledBy.every((ref) => ids.includes(ref)), labelledBy.join(', '));
+assert(
+  'contact page never claims a message was sent',
+  !/\b(enquiry sent|message sent|we have received)\b/i.test(contact.replace(/<[^>]+>/g, ' ')),
+);
 
-assert('form declares noValidate so our own messages are used', /<form[^>]*novalidate/i.test(contact));
-assert('required fields are marked with the required attribute', (contact.match(/required/g) || []).length >= 6);
-assert('privacy acknowledgement link is present', /href="\/privacy-policy"/.test(contact));
-assert('honeypot input is hidden from assistive tech', /aria-hidden="true"[^>]*class="absolute left-\[-9999px\]/.test(contact));
-assert('error region uses aria-live', /aria-live="assertive"/.test(contact));
+/* --- the lockup announces one name, not three ------------------------ */
+assert(
+  'header home link has a single accessible name',
+  /aria-label="Obsidixz Real Estate home"/.test(home),
+);
+assert(
+  'logo artwork is hidden from assistive tech',
+  /<img[^>]*alt=""[^>]*aria-hidden="true"/.test(home) || /<img[^>]*aria-hidden="true"[^>]*alt=""[^>]*>/.test(home),
+);
 
 console.log(`\n${'='.repeat(60)}`);
 const total = fails + structureFails + extraFails;
