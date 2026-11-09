@@ -889,3 +889,35 @@ Ran the workflow steps locally, in order:
 The earlier claim that `a11y` exited zero with no server was incorrect: the test had read `tail`'s
 exit code through a pipeline, not the script's. A direct invocation returns 1 as expected. The
 workflow fix above is independently reproduced and verified.
+
+---
+
+## Post-Stage-8: Node 22.23.4 Undici smoke-test crash fixed
+
+The Actions log from the failed run narrowed the issue to `npm run smoke`, after the export had built
+and the static server had started. The stack ended in Node's `undici` HTTP parser:
+
+`AssertionError [ERR_ASSERTION]: assert(!this.paused)`
+
+This was **not a Next.js build/config failure**. The smoke test issued `GET` requests only to check
+whether internal links and local assets existed, then left response bodies unread. It also followed
+some directory routes without consuming the small 301 redirect body. In Node 22.23.4 this could
+crash Undici while finalizing the socket, instead of returning an HTTP status.
+
+### Fix and reproduction
+
+- Status-only checks now use `HEAD` for internal links, local assets, the Open Graph image and
+  response headers.
+- The slash-redirect helper consumes the redirect body before following the new URL.
+- The unsupported-POST check drains its response body.
+
+Rebuilt the export under **Node 22.23.4**, served it with the exact Python static server from the
+workflow, and ran the actual scripts with that Node version:
+
+| Check | Result |
+| --- | --- |
+| `check-accessibility.mjs` | ✅ all checks passed |
+| `smoke-test.mjs` | ✅ 138/138, repeated 3 times |
+
+This matches the exact version reported in the Actions stack and resolves the actual failure shown
+in the founder's log screenshot.
