@@ -1,0 +1,207 @@
+@import 'tailwindcss';
+
+/* ==========================================================================
+   OBSIDIXZ REAL ESTATE — DESIGN TOKENS
+   Approved parent-brand identity. Do not substitute colours.
+   ========================================================================== */
+@theme {
+  /* Brand palette */
+  --color-royal: #315c9b;
+  --color-royal-deep: #274a7d;
+  --color-royal-tint: #eef3fa;
+  /*
+   * Lighter brand blue, for the "Real Estate" label on the dark footer where
+   * --color-royal itself falls below AA. Measured: #315c9b on #111111 is
+   * 2.82:1, which fails; #7fa9dd on #111111 is 7.75:1, which passes AAA. Used
+   * only on a dark surface — on white it would be far too pale.
+   */
+  --color-royal-soft: #7fa9dd;
+  --color-gold: #b47745;
+  --color-gold-deep: #8a5530; /* AA text: 6.13:1 on white, 5.48:1 on gold-tint, 5.29:1 on mist */
+  --color-gold-tint: #f8f1ea;
+  --color-ink: #111111;
+  --color-charcoal: #292d32;
+  --color-mist: #f4f5f7;
+
+  /* Typography */
+  --font-sans:
+    'Open Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial,
+    sans-serif;
+  --font-display:
+    'Montserrat Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial,
+    sans-serif;
+
+  /* Editorial type scale */
+  --text-display: clamp(2.15rem, 1.05rem + 3.4vw, 3.75rem);
+  --text-display--line-height: 1.04;
+  --text-display--letter-spacing: -0.028em;
+  --text-h2: clamp(1.85rem, 1.2rem + 2.1vw, 2.85rem);
+  --text-h2--line-height: 1.1;
+  --text-h2--letter-spacing: -0.022em;
+  --text-h3: clamp(1.2rem, 1rem + 0.7vw, 1.45rem);
+  --text-h3--line-height: 1.3;
+  --text-h3--letter-spacing: -0.012em;
+  --text-lead: clamp(1.06rem, 0.98rem + 0.35vw, 1.22rem);
+  --text-lead--line-height: 1.65;
+
+  /* Motion */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ==========================================================================
+   BASE
+   ========================================================================== */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: #ffffff;
+    color: var(--color-charcoal);
+    font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    /*
+     * No `overflow-x: hidden` here. On a `min-h-screen` sticky-footer layout it makes the body a
+     * scroll container, which breaks `position: sticky` descendants and can clip the focus ring.
+     * Horizontal overflow is prevented at source instead — see the `overflow-wrap` rules below and
+     * `scripts/check-layout-metrics.mjs`, which proves the widest word fits its column.
+     */
+    overflow-wrap: break-word;
+  }
+
+  /* Long unbroken strings (URLs, emails, IDs) must wrap rather than widen their container. */
+  h1,
+  h2,
+  h3,
+  h4,
+  p,
+  li,
+  dd,
+  a {
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    color: var(--color-ink);
+    font-weight: 700;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background-color: var(--color-royal);
+    color: #ffffff;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-royal);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* Skip link — visible on keyboard focus only */
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -100px;
+    z-index: 100;
+    background: var(--color-royal);
+    color: #ffffff;
+    padding: 0.75rem 1.25rem;
+    font-weight: 600;
+    border-radius: 2px;
+    transition: top 150ms var(--ease-out-soft);
+  }
+  .skip-link:focus {
+    top: 1rem;
+  }
+
+  [id] {
+    scroll-margin-top: 6.5rem;
+  }
+}
+
+/* ==========================================================================
+   COMPONENT PRIMITIVES
+   ========================================================================== */
+@layer components {
+  /* Small uppercase section label */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-royal);
+  }
+
+  /* Hairline rule used to divide content blocks */
+  .hairline {
+    height: 1px;
+    width: 100%;
+    background-color: color-mix(in srgb, var(--color-charcoal) 12%, transparent);
+  }
+
+  /* Faint blueprint grid used behind dark sections */
+  .grid-lines {
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.055) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.055) 1px, transparent 1px);
+    background-size: 72px 72px;
+  }
+
+  .grid-lines-dark {
+    background-image:
+      linear-gradient(to right, rgb(17 17 17 / 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(17 17 17 / 0.05) 1px, transparent 1px);
+    background-size: 72px 72px;
+  }
+}
+
+/* ==========================================================================
+   ACCESSIBILITY / MOTION
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Reveal-on-scroll: only applied when JS has marked the element and motion is allowed */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    opacity: 0;
+    transform: translateY(14px);
+    transition:
+      opacity 700ms var(--ease-out-soft),
+      transform 700ms var(--ease-out-soft);
+  }
+  .reveal[data-visible='true'] {
+    opacity: 1;
+    transform: none;
+  }
+}

@@ -1,0 +1,95 @@
+name: Deploy to GitHub Pages
+
+# WHY GITHUB PAGES AND NOT VERCEL
+# -------------------------------
+# This site is *fully static*: `next build` marks all 13 routes as prerendered,
+# there is no API route, no server action and no database. That is a direct
+# consequence of moving contact to the visitor's own email application.
+#
+# GitHub Pages therefore suffices, and it is the option that requires no new
+# account, because the code already lives here.
+#
+# THE ONE THING THAT WILL SILENTLY BREAK THIS
+# -------------------------------------------
+# A GitHub Pages *project* site serves from https://<user>.github.io/<repo>/ —
+# a sub-directory, not a domain root. Every asset URL must therefore carry the
+# /<repo> prefix. NEXT_PUBLIC_BASE_PATH supplies it, and next.config.ts turns
+# it into `basePath` + `assetPrefix`.
+#
+# If that variable is missing, the page still returns HTTP 200 while all CSS,
+# JS and image URLs resolve one level too high and 404. The site renders
+# unstyled and looks "broken but loading", which is easy to misdiagnose as a
+# deployment failure. The check step below catches it before deploy.
+#
+# A GitHub Pages *user* site (<user>.github.io) serves from the root and needs
+# no base path.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      # Derived from the repository name so it cannot drift out of sync with
+      # the URL GitHub actually serves from.
+      NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+      NEXT_PUBLIC_SITE_URL: https://realestate.obsidixz.pp.ua
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck, lint, layout, accessibility, copy feedback
+        run: npm run check
+
+      - name: Build for a sub-path
+        run: npm run build
+
+      - name: Verify the base path was applied
+        run: |
+          # Guards against the silent failure described at the top of this file.
+          if grep -q '"/_next/' .next/server/app/index.html; then
+            echo "::error::Asset URLs have no base path. The site would load without CSS or JS."
+            exit 1
+          fi
+          grep -q "\"/${GITHUB_REPOSITORY#*/}/_next/" .next/server/app/index.html
+          echo "Base path applied correctly."
+
+      - name: Add .nojekyll
+        run: |
+          # Jekyll ignores files and directories beginning with an underscore.
+          # Next.js puts every asset under /_next/, so without this file the
+          # entire stylesheet and JavaScript bundle would be skipped.
+          touch .next/.nojekyll
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .next
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
