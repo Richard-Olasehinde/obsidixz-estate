@@ -17,18 +17,25 @@ const EMAIL = 'obsidixz.realestate@outlook.com';
 const SUCCESS = 'Email address copied';
 const FAILURE = 'Couldn’t copy. Please select and copy the email address above.';
 
-/** Mirrors the component: async Clipboard API when available and secure. */
+/**
+ * Mirrors the component exactly: try the async Clipboard API when it exists and
+ * the context is secure; if it is absent OR it rejects, fall back to the legacy
+ * `document.execCommand('copy')` path. This ordering matters — an earlier
+ * version of the component gave up as soon as `writeText` threw, so a browser
+ * that blocked the modern API but allowed the legacy one could never copy.
+ */
 async function copyState({ clipboard, secure, legacyResult }) {
-  try {
-    if (clipboard && secure) {
+  let copied = false;
+  if (clipboard && secure) {
+    try {
       await clipboard.writeText(EMAIL);
-      return 'copied';
+      copied = true;
+    } catch {
+      copied = false;
     }
-    // Legacy path — synchronous document.execCommand('copy').
-    return legacyResult ? 'copied' : 'failed';
-  } catch {
-    return 'failed';
   }
+  if (!copied) copied = Boolean(legacyResult);
+  return copied ? 'copied' : 'failed';
 }
 
 const cases = [
@@ -42,6 +49,32 @@ const cases = [
         },
       },
       secure: true,
+    },
+    'failed',
+  ],
+  [
+    'writeText blocked (cross-origin iframe), execCommand succeeds',
+    {
+      clipboard: {
+        writeText: async () => {
+          throw new Error('NotAllowedError: clipboard-write not delegated');
+        },
+      },
+      secure: true,
+      legacyResult: true,
+    },
+    'copied',
+  ],
+  [
+    'writeText blocked AND execCommand refuses',
+    {
+      clipboard: {
+        writeText: async () => {
+          throw new Error('NotAllowedError');
+        },
+      },
+      secure: true,
+      legacyResult: false,
     },
     'failed',
   ],

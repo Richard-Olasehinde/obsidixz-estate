@@ -789,3 +789,29 @@ project already recorded once. The rule now applies in both directions:
 **Consequence for BLK-01:** the verification steps require *any* account that is not the business
 mailbox, and name none specifically. The choice of that account is the founder's, not an assumption
 to be baked into the documentation.
+
+### D66. When the modern clipboard API refuses, try the legacy path anyway
+
+**Observed in the hosted preview:** clicking "Copy email address" showed
+"Couldn't copy. Please select and copy the email address above." That message is the component
+behaving correctly — but it exposed a weakness in the ordering beneath it.
+
+**Cause of that specific failure:** the preview renders this site in a **cross-origin iframe** on
+`arena.ai`. The page is HTTPS and `navigator.clipboard` exists, so the modern path was taken;
+`writeText()` then rejected because the embedding document has not delegated `clipboard-write` to
+the frame. This is a deliberate browser security boundary. It does not indicate a fault in the site,
+and the same failure would appear wherever the page is framed without that permission — including
+some in-app browsers and preview panes.
+
+**The weakness it revealed:** the original code caught that rejection and went straight to
+`failed`. It never tried the legacy `document.execCommand('copy')` path, even though that path still
+succeeds in some browsers where `writeText` is blocked. A visitor in that situation was told copying
+had failed when it might have worked.
+
+**Fix:** the legacy path now runs whenever `writeText` is *absent or rejects*. `npm run
+copy-feedback` grew from six branches to eight, including the cross-origin-iframe case and the case
+where both paths refuse.
+
+**What has not changed:** success is still reported only when a copy genuinely resolved. The
+fallback cannot manufacture a success — it reports `execCommand`'s own return value, and a `false`
+still produces the failure message.

@@ -690,8 +690,9 @@ first has been verified.
 | Address present as selectable text, not only in the link | ✅ asserted |
 | Copy control present and labelled | ✅ asserted |
 | No delivery/receipt confirmation anywhere on the page | ✅ asserted |
-| Copy success branch → "Email address copied" | ✅ asserted, 6 branches |
-| Copy failure branch → "Couldn’t copy. Please select and copy the email address above." | ✅ asserted, 4 of the 6 branches |
+| Copy success branch → "Email address copied" | ✅ asserted, 8 branches |
+| Copy failure branch → "Couldn’t copy. Please select and copy the email address above." | ✅ asserted, 4 of the 8 branches |
+| `writeText` blocked in a cross-origin iframe → falls through to `execCommand` | ✅ asserted — this is the hosted-preview case |
 | Address is keyboard reachable in the failure path | ✅ asserted in `npm run a11y` |
 | Lockup announces one accessible name | ✅ asserted |
 

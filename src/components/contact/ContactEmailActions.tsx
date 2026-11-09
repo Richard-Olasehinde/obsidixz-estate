@@ -79,16 +79,27 @@ export function ContactEmailActions({ email }: { email: string }) {
       }
     };
 
-    try {
-      if (navigator.clipboard && window.isSecureContext) {
+    let copied = false;
+
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
         await navigator.clipboard.writeText(email);
-        setCopyState('copied');
-      } else {
-        setCopyState(legacyCopy() ? 'copied' : 'failed');
+        copied = true;
+      } catch {
+        /*
+         * The modern API refused. It throws for reasons that have nothing to
+         * do with this page's own code: a denied permission, or a cross-origin
+         * iframe without `clipboard-write` delegated to it — which is exactly
+         * how this site is displayed in a hosted preview. Fall through to the
+         * legacy path rather than giving up, because `execCommand` still works
+         * in some browsers where `writeText` is blocked.
+         */
+        copied = false;
       }
-    } catch {
-      setCopyState('failed');
     }
+
+    if (!copied) copied = legacyCopy();
+    setCopyState(copied ? 'copied' : 'failed');
 
     resetTimer.current = setTimeout(() => setCopyState('idle'), 6000);
   }, [email]);
