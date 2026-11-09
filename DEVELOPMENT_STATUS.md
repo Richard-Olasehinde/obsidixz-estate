@@ -801,3 +801,57 @@ The guard was tested against both a correct and a missing base path.
 One regression was caught and fixed during this work: narrowing `images.deviceSizes` removed the
 1200px width that the performance budget measures against, failing "hero image is served as AVIF".
 Restored, and the budget passes again.
+
+
+---
+
+## Post-Stage-8: static export and the custom-domain build
+
+Preparing the GitHub Pages deployment exposed three defects in the deployment path. All three
+produced a page that **returns HTTP 200**, which is why none would have been caught by a status
+check.
+
+| # | Defect | Consequence had it shipped |
+| --- | --- | --- |
+| 1 | `next build` output (`.next/`) was uploaded as the Pages artifact | `index.html` sits in `.next/server/app/`, not the artifact root — **every URL 404s** |
+| 2 | The workflow set `NEXT_PUBLIC_BASE_PATH=/<repo>` | Correct for `github.io/<repo>/`, **wrong for a custom domain**, which serves at `/` — every asset 404s on the live domain |
+| 3 | No `CNAME` in the artifact | The custom domain does not bind to the deployment |
+
+### Fixes
+
+- `NEXT_OUTPUT_EXPORT=1` switches `next.config.ts` to `output: 'export'`, emitting `out/` with
+  `index.html` at the root. `trailingSlash` gives directory-style URLs; `images.unoptimized` is
+  required because an export cannot re-encode on demand.
+- `manifest.ts`, `robots.ts` and `sitemap.ts` gained `export const dynamic = 'force-static'`,
+  without which the export refuses to build.
+- The base path is **unset**, and the workflow now fails if a repository prefix reappears in the
+  output.
+- `CNAME` and `.nojekyll` are written into `out/` before upload.
+
+**Trade-off, recorded deliberately:** the bare `github.io/<repo>/` URL is not a usable preview for
+this build. The custom domain is, once the certificate issues.
+
+### Tooling fixed at the same time
+
+| Tool | Defect |
+| --- | --- |
+| `check-accessibility.mjs` | Hardcoded `http://localhost:3000` and ignored `SITE_ORIGIN`, so it silently tested the wrong build — or crashed — whenever the site ran anywhere else |
+| `smoke-test.mjs` | Treated a trailing-slash redirect as a failure, so it could only ever pass against a Next server. Also asserted status `404` for a removed endpoint and server-set response headers, neither of which a static host provides |
+
+The header checks are now **reported as host-provided rather than asserted**, because GitHub Pages
+cannot set response headers at all. The absence is real and worth seeing every run.
+
+### Verification, on both build paths
+
+| Check | Server build | Static export |
+| --- | --- | --- |
+| `npm run smoke` | ✅ 138/138 | ✅ 138/138 |
+| `npm run a11y` | ✅ all pass | ✅ all pass |
+| `npm run perf` | ✅ 28/28 | n/a (no server) |
+| `npm run layout` | ✅ 35/35 | ✅ 35/35 |
+| `npm run copy-feedback` | ✅ 8/8 | ✅ 8/8 |
+| Export output | — | `out/` 3.7 MB, 97 files, `index.html` at root |
+
+The export was served over plain HTTP and checked directly: `/`, `/contact/`, `/services/`,
+`/about/`, `/privacy-policy/`, `/manifest.webmanifest`, `/robots.txt`, `/sitemap.xml` and the CSS
+bundle all return 200.

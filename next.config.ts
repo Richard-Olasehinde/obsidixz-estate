@@ -33,11 +33,34 @@ const securityHeaders = [
  */
 const basePath = (process.env.NEXT_PUBLIC_BASE_PATH ?? '').trim().replace(/\/$/, '');
 
+/**
+ * TRUE STATIC EXPORT.
+ *
+ * `next build` on its own produces a server-runnable build: the HTML lives in
+ * `.next/server/app/`, which the Next server knows how to serve and a plain
+ * static host does not. Uploading `.next/` to GitHub Pages therefore yields a
+ * site whose `index.html` is not at the artifact root — every URL 404s.
+ *
+ * Setting NEXT_OUTPUT_EXPORT=1 switches to `output: 'export'`, which emits a
+ * genuinely static `out/` directory with `index.html` at the root. CI sets it;
+ * local development and `next start` do not, so the existing verification
+ * workflow is unaffected.
+ *
+ * Two consequences, both deliberate:
+ *  - `images.unoptimized` is required, because a static export cannot re-encode
+ *    images on demand. The committed artwork is already sized for its use.
+ *  - `trailingSlash` is enabled so `/contact` is emitted as
+ *    `contact/index.html`, which is what GitHub Pages serves for a directory.
+ */
+const staticExport = process.env.NEXT_OUTPUT_EXPORT === '1';
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
   ...(basePath ? { basePath, assetPrefix: basePath } : {}),
+  ...(staticExport ? { output: 'export' as const, trailingSlash: true } : {}),
   images: {
+    ...(staticExport ? { unoptimized: true } : {}),
     // The served artwork is one generation from the supplied originals, which
     // peak at 1408x768, so 1280 is the widest size worth offering. Listed
     // explicitly because a static export cannot re-encode images on demand.

@@ -904,3 +904,67 @@ as distinct.
 
 **Standing instruction retained:** if the mailbox provider, the address, or the receiving account
 changes, this closure is void and the check must be re-run before the site is described as working.
+
+### D72. The Pages build is a real static export, and it carries no base path
+
+**Two corrections to the deployment work, both of which would have shipped a broken site that
+returned HTTP 200.**
+
+**1. `next build` is not enough for a static host.** Its HTML lands in `.next/server/app/`, which
+only the Next server knows how to serve. Uploaded to GitHub Pages, `index.html` would not be at the
+artifact root and **every URL would 404**. The workflow now sets `NEXT_OUTPUT_EXPORT=1`, which
+switches `next.config.ts` to `output: 'export'` and emits `out/` with `index.html` at the root.
+`trailingSlash` yields directory-style URLs; `images.unoptimized` is unavoidable because an export
+cannot re-encode images on demand. `manifest.ts`, `robots.ts` and `sitemap.ts` needed
+`dynamic = 'force-static'` or the export refuses to build at all.
+
+**2. The base path was pointing the wrong way.** A Pages *project* site serves from `/<repo>/`, so
+`NEXT_PUBLIC_BASE_PATH=/<repo>` looked right — and was, for the `github.io` preview URL. But a
+**custom domain serves the site at `/`**, so every prefixed asset URL would 404 on
+`realestate.obsidixz.pp.ua`, the address that actually matters. The variable is now unset and the
+workflow fails if a repository prefix reappears.
+
+**Accepted trade-off:** the bare `github.io/<repo>/` URL is no longer a usable preview. The custom
+domain is, once the certificate issues. Stated here because it will otherwise look like a
+regression to whoever tries that URL next.
+
+**3. `CNAME` is written into the artifact.** GitHub writes one into the branch when the custom
+domain is saved in Settings, but that mechanism does not apply to an Actions artifact build.
+
+### D73. Response headers are a hosting property, and GitHub Pages has none
+
+**Accepting a real reduction in security posture, rather than hiding it.**
+
+`next.config.ts` still defines `X-Content-Type-Options`, `Referrer-Policy` and `Permissions-Policy`.
+Those apply whenever the site runs behind the Next server. **A static host cannot set response
+headers, and GitHub Pages does not support them at all.**
+
+**Why this is tolerable here:** all three are defence-in-depth. The site has no accounts, no forms,
+no cookies, no third-party scripts, no inline handlers and no API. Nothing consumes a camera,
+microphone or location. The practical risk of their absence is low.
+
+**Why it is recorded anyway:** "low risk" is not "no cost", and a gap that nobody wrote down becomes
+a gap nobody knows about. `npm run smoke` now reports these as **host-provided** rather than
+asserting them, so every run displays the absence.
+
+**If they are wanted back:** Cloudflare in front of GitHub Pages can add them with a Transform Rule
+(smallest change), or Cloudflare Pages / Netlify both read a `_headers` file and deploy the same
+`out/` directory unchanged.
+
+### D74. Two verification scripts were testing the wrong thing
+
+Both were found by running the suites against the static export rather than assuming they would
+still apply.
+
+- **`check-accessibility.mjs` hardcoded `http://localhost:3000`** and ignored `SITE_ORIGIN`. It
+  silently tested whichever server happened to be on that port, or crashed. It now honours
+  `SITE_ORIGIN` like the other suites.
+- **`smoke-test.mjs` asserted server-specific behaviour**: that a route returns exactly 200 (a
+  trailing-slash redirect is correct for a static export), that `/api/enquiry` returns 404 (a bare
+  file server returns 501 for an unsupported POST), and that response headers are present (no
+  static host sets them).
+
+The 404 check now asserts on `/404.html`, which is what a static host actually serves, and the
+header checks report instead of asserting. Both suites now pass against **both** the server build
+and the static export — which is the point: the suite should test the deployment target, not the
+development configuration.
