@@ -58,13 +58,46 @@ jobs:
 
       - run: npm ci
 
-      - name: Typecheck, lint, layout, accessibility, copy feedback
-        run: npm run check
+      # Checks that need NO running server. `npm run check` cannot be used here:
+      # it includes `npm run a11y`, which fetches every route from a live origin,
+      # and `npm run build`. In CI there is no server to fetch, so `check` dies
+      # with `fetch failed` and the build step is never reached. The site is
+      # still verified — see the next step, which checks the real artifact.
+      - name: Typecheck, lint, layout, copy feedback
+        run: npm run check:offline
 
       - name: Build a true static export
         env:
           NEXT_OUTPUT_EXPORT: '1'
         run: npm run build
+
+      # The suites skipped above, now run against the artefact that will
+      # actually be published — not against a development server.
+      #
+      # python3's http.server is used deliberately: it is already on the
+      # ubuntu-latest image, so this adds no dependency and no mid-run download
+      # from the npm registry. It is also a genuinely dumb static file server,
+      # which makes it a fair proxy for GitHub Pages.
+      - name: Serve the export and run the browser-level suites
+        run: |
+          python3 -m http.server 4173 --directory out --bind 127.0.0.1 \
+            >/tmp/serve.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null' EXIT
+
+          for i in $(seq 1 30); do
+            if curl -fsS -o /dev/null http://127.0.0.1:4173/; then break; fi
+            sleep 1
+          done
+          curl -fsS -o /dev/null http://127.0.0.1:4173/ || {
+            echo "::error::The exported site did not start on :4173."
+            cat /tmp/serve.log
+            exit 1
+          }
+          echo "Export is serving."
+
+          SITE_ORIGIN=http://127.0.0.1:4173 npm run a11y
+          SITE_ORIGIN=http://127.0.0.1:4173 npm run smoke
 
       - name: Verify no base path leaked into the output
         run: |

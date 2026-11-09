@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "smoke": "node scripts/smoke-test.mjs",
     "check": "npm run typecheck && npm run lint && npm run layout && npm run a11y && npm run copy-feedback && npm run build",
+    "check:offline": "npm run typecheck && npm run lint && npm run layout && npm run copy-feedback",
     "layout": "node scripts/check-layout-metrics.mjs",
     "a11y": "node scripts/check-accessibility.mjs",
     "perf": "node scripts/check-performance.mjs",

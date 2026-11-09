@@ -128,6 +128,18 @@ with `index.html` at the root. Two consequences, both required:
 `manifest.ts`, `robots.ts` and `sitemap.ts` also need `export const dynamic = 'force-static'`,
 without which the export refuses to build.
 
+#### 1a. Checks must not expect a server before the export exists
+
+`npm run check` is the **local** aggregate and includes `npm run a11y`, which fetches routes from a
+running server. GitHub Actions has no site server at that point, so running `check` fails with
+`TypeError: fetch failed` before `next build` can be reached. That is why the first deployment
+attempts failed in roughly a minute without a build or certificate request.
+
+The Pages workflow now runs `npm run check:offline` (typecheck, lint, layout, copy-feedback), then
+builds the export. It starts Python's built-in static file server against `out/` and runs both
+`npm run a11y` and `npm run smoke` **against that exact artifact**, before upload. This both avoids
+the false CI failure and makes the check meaningful: we test the files GitHub Pages will receive.
+
 #### 2. No base path, because this site is on a custom domain
 
 A Pages *project* site serves from `/<repo>/` — but **a custom domain serves the site at `/`**.

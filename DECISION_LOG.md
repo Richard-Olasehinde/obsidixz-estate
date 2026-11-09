@@ -968,3 +968,20 @@ The 404 check now asserts on `/404.html`, which is what a static host actually s
 header checks report instead of asserting. Both suites now pass against **both** the server build
 and the static export — which is the point: the suite should test the deployment target, not the
 development configuration.
+
+
+### D75. GitHub Actions verifies the published static artifact, not a missing dev server
+
+The first workflow attempts failed in `npm run check`: that local aggregate runs `a11y`, which
+fetches from a live server, but Actions had not started one. The export build and Pages certificate
+request were never reached.
+
+**CI sequence:** `npm run check:offline` (typecheck, lint, layout, copy-feedback) → static export
+build → serve `out/` with Python's built-in static server → run `a11y` and `smoke` against the
+artifact → base-path guard → write `.nojekyll` and `CNAME` → upload Pages artifact.
+
+No network package install or CI-only dependency is needed for the static server. The suite is
+checking the files actually destined for GitHub Pages.
+
+**Correction recorded:** a prior status read `tail`'s zero exit through a shell pipeline and
+incorrectly stated `a11y` exits zero when no server is available. Direct test confirms it exits 1.
