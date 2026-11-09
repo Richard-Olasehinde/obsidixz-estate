@@ -91,10 +91,11 @@ repository, so enabling Pages is a settings change, not a signup.
 | Preview URL | `https://<user>.github.io/<repo>/` from the first successful run |
 | Limitation | **Public repositories only** on the free tier |
 
-> **The repository is currently private.** Free GitHub Pages requires it to be public, or a paid
-> plan to serve Pages from a private repository. That is a decision for the founder: make this
-> repository public, or use one of the alternatives below. It is not a technical constraint — the
-> site contains no secrets, and the static output is public by definition once deployed.
+> **Repository visibility.** Free GitHub Pages requires a public repository; paid plans can serve
+> Pages from a private one. This was checked before publication: a full scan of **all history**
+> found no secret-shaped strings, no API keys, no phone numbers, and only `.env.example` ever
+> committed — never a real env file. What becomes public is the business contact mailbox, the
+> correspondence address (already published on the site), and the code itself. No secrets.
 
 **Alternatives**, if the repository should stay private:
 
@@ -106,22 +107,81 @@ repository, so enabling Pages is a settings change, not a signup.
 
 ### 3.3 The included workflow
 
-`.github/workflows/deploy-pages.yml` was added and runs on every push to `main`.
+`.github/workflows/deploy-pages.yml` runs on every push to `main`.
 
-**One thing in it will silently break the site if removed.** A Pages *project* site serves from
-`https://<user>.github.io/<repo>/` — a sub-directory, not a domain root. Every asset URL must carry
-the `/<repo>` prefix, supplied by `NEXT_PUBLIC_BASE_PATH` and turned into `basePath` +
-`assetPrefix` by `next.config.ts`.
+**Three things in it are load-bearing. Each fixes a failure that returns HTTP 200 and therefore
+cannot be caught by a status check.**
 
-Without it the HTML still returns **200**, while every stylesheet, script and image URL resolves
-one level too high and returns **404**. The page loads unstyled, which reads as "deployment broken"
-rather than "base path missing". The workflow's *Verify the base path was applied* step fails the
-run in that case, and it was tested against both outcomes.
+#### 1. A true static export, not `next build`
 
-The workflow also writes `.nojekyll`, without which Jekyll skips every directory beginning with an
-underscore — including `/_next/`, i.e. the entire CSS and JS bundle.
+`next build` alone produces a *server* build: the HTML lands in `.next/server/app/`, which only the
+Next server knows how to serve. Uploading `.next/` to GitHub Pages gives a site whose `index.html`
+is not at the artifact root — every URL 404s.
 
----
+Setting `NEXT_OUTPUT_EXPORT=1` switches `next.config.ts` to `output: 'export'`, producing `out/`
+with `index.html` at the root. Two consequences, both required:
+
+- `images.unoptimized` — a static export cannot re-encode images on demand.
+- `trailingSlash` — `/contact` becomes `contact/index.html`, which is what a static host serves for
+  a directory.
+
+`manifest.ts`, `robots.ts` and `sitemap.ts` also need `export const dynamic = 'force-static'`,
+without which the export refuses to build.
+
+#### 2. No base path, because this site is on a custom domain
+
+A Pages *project* site serves from `/<repo>/` — but **a custom domain serves the site at `/`**.
+GitHub's own documentation states this. A build carrying `/<repo>` prefixes is correct for the
+`github.io` URL and **wrong for `realestate.obsidixz.pp.ua`**, where every stylesheet and image
+would 404.
+
+Since the custom domain is the destination, the build sets **no** base path, and the workflow fails
+the run if a repository prefix ever reappears in `out/index.html`.
+
+> **Consequence, stated plainly:** the bare `https://richard-olasehinde.github.io/obsidixz-estate/`
+> URL is **not a usable preview** for this build and will render unstyled. Preview on the custom
+> domain once the certificate is issued. This is a deliberate trade, and an earlier revision of this
+> workflow got it backwards.
+
+#### 3. `.nojekyll` and `CNAME`
+
+- Without `.nojekyll`, Jekyll skips every directory beginning with an underscore — including
+  `/_next/`, i.e. the entire CSS and JS bundle.
+- `CNAME` is written into the published output so the artifact binds the custom domain. GitHub
+  writes one into the *branch* when the domain is saved in Settings, but that mechanism does not
+  apply to an Actions artifact.
+
+### 3.4 Response headers: not available on GitHub Pages
+
+`next.config.ts` still defines the security headers, and they are applied whenever the site runs
+behind the Next server. **A static host cannot set response headers, and GitHub Pages does not
+support them at all** — `_headers` is a Netlify and Cloudflare Pages feature.
+
+On GitHub Pages, therefore, these are **absent**:
+
+| Header | What is lost |
+| --- | --- |
+| `X-Content-Type-Options: nosniff` | MIME sniffing protection |
+| `Referrer-Policy: strict-origin-when-cross-origin` | Referrer trimming on outbound navigation |
+| `Permissions-Policy` | Explicit denial of camera, microphone, geolocation |
+
+**How much this matters here.** All three are defence-in-depth, not load-bearing. The site has no
+user accounts, no forms, no cookies, no third-party scripts, no inline event handlers and no API.
+Nothing on it consumes a camera, microphone or location. The practical risk of their absence is
+low — but it is a real reduction in posture compared with the server build, and it is recorded
+rather than glossed over.
+
+`npm run smoke` reports these as **host-provided** rather than asserting them, so the absence is
+visible in every run instead of silently skipped.
+
+**If these headers matter**, the options are:
+
+1. **Cloudflare in front of GitHub Pages** (free) — a Transform Rule can add them at the edge, and
+   the site keeps its Pages hosting.
+2. **Cloudflare Pages or Netlify** instead — both read a `_headers` file, and the same static
+   `out/` directory deploys unchanged.
+
+Option 1 is the smallest change. Option 2 is the cleanest if the repository is private anyway.
 
 ## 3a. Exact DNS records
 

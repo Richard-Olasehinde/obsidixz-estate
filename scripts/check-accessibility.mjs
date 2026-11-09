@@ -1,5 +1,9 @@
 // Combined audit: contrast, tabindex, landmarks, heading/alt/link sanity.
-const ORIGIN='http://localhost:3000';
+// Honours SITE_ORIGIN so the suite can run against any served build — a Next
+// server on another port, or a static export. Earlier it was hardcoded to
+// :3000, which silently tested the wrong thing (or crashed) whenever the site
+// was served anywhere else.
+const ORIGIN = (process.env.SITE_ORIGIN || 'http://localhost:3000').replace(/\/$/, '');
 const routes=['/','/about','/services','/how-it-works','/who-we-serve','/contact','/privacy-policy','/terms-of-service'];
 
 // WCAG relative luminance + contrast
