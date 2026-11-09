@@ -934,9 +934,9 @@ Founder confirmed the live site works and requested two finishing changes:
    small widths, 92px at medium widths and 104px at large widths. The original artwork and proportions in the header are
    untouched.
 2. The browser tab showed the temporary blue/white/gold square favicon, not the supplied identity.
-   The favicon and touch icon now use a proportional crop of the actual symbol from the supplied
-   parent-logo PNG. No icon redraw, recolouring or distortion. URLs are versioned to bypass browser
-   caching. The full parent-logo artwork is still used in structured business data.
+   The favicon and touch icon now use the founder-provided transparent symbol PNG. The generator
+   trims only transparent canvas and downsizes proportionally; it does not redraw, recolour or
+   distort the icon. URLs are versioned to bypass browser caching. The full parent-logo artwork is still used in structured business data.
 
 Added responsive layout metrics that assert at least 4px vertical clearance around the full supplied
 lockup at 320, 640, 768, 1024 and 1280px. Visual regression still needs the founder's browser check

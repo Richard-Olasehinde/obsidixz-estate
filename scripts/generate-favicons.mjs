@@ -1,10 +1,12 @@
 /**
- * Regenerates the browser icons from the supplied Obsidixz parent-logo artwork.
+ * Regenerates the Obsidixz browser icons from the founder-provided transparent
+ * parent-symbol asset.
  *
- * The 32px browser mark is a proportional crop of the exact symbol already
- * present in `public/brand/obsidixz-parent-logo-on-light.png`. It is not
- * redrawn, recoloured, rotated, or stretched. ImageMagick is used only to crop
- * and downsample that source raster while preserving its colours/aspect ratio.
+ * Source: public/brand/obsidixz-parent-symbol-transparent.png
+ *
+ * ImageMagick trims only fully transparent outer canvas, then proportionally
+ * downsamples the supplied pixels into a square transparent favicon canvas.
+ * The mark is never redrawn, recoloured, rotated, or stretched.
  *
  * Requirements: ImageMagick `convert` on PATH.
  * Run:         node scripts/generate-favicons.mjs
@@ -17,7 +19,7 @@ import { spawnSync } from 'node:child_process';
 
 const ROOT = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const PUBLIC = resolve(ROOT, 'public');
-const SOURCE = resolve(PUBLIC, 'brand/obsidixz-parent-logo-on-light.png');
+const SOURCE = resolve(PUBLIC, 'brand/obsidixz-parent-symbol-transparent.png');
 
 function convert(args) {
   const result = spawnSync('convert', args, { encoding: 'utf8' });
@@ -27,40 +29,27 @@ function convert(args) {
   }
 }
 
-// Exact bounds of the supplied interlock-diamond artwork within the committed
-// parent-logo raster (931x785). Both outputs are centered on white to remain
-// clear in browser chrome/home-screen launchers, while mark pixels remain as
-// supplied.
-const mark = ['-crop', '629x521+254+48', '+repage'];
-convert([
-  SOURCE,
-  ...mark,
-  '-resize', '32x32',
-  '-gravity', 'center',
-  '-background', 'white',
-  '-alpha', 'remove',
-  '-alpha', 'off',
-  '-extent', '32x32',
-  resolve(PUBLIC, 'favicon-32.png'),
-]);
+function render(size, filename) {
+  convert([
+    SOURCE,
+    '-trim',
+    '+repage',
+    '-resize', `${size}x${size}`,
+    '-gravity', 'center',
+    '-background', 'none',
+    '-extent', `${size}x${size}`,
+    resolve(PUBLIC, filename),
+  ]);
+}
 
-convert([
-  SOURCE,
-  ...mark,
-  '-resize', '164x164',
-  '-gravity', 'center',
-  '-background', 'white',
-  '-alpha', 'remove',
-  '-alpha', 'off',
-  '-extent', '180x180',
-  resolve(PUBLIC, 'apple-touch-icon.png'),
-]);
+render(32, 'favicon-32.png');
+render(180, 'apple-touch-icon.png');
 
 const png = readFileSync(resolve(PUBLIC, 'favicon-32.png')).toString('base64');
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" aria-label="Obsidixz">
-  <!-- Exact crop of the supplied parent-logo artwork; no logo redraw. -->
+  <!-- The exact founder-provided transparent PNG, trimmed only outside its artwork. -->
   <image href="data:image/png;base64,${png}" width="32" height="32" />
 </svg>
 `;
 writeFileSync(resolve(PUBLIC, 'favicon.svg'), svg);
-console.log('Wrote faithful browser icons from public/brand/obsidixz-parent-logo-on-light.png');
+console.log('Wrote transparent browser icons from the founder-provided parent-symbol PNG');

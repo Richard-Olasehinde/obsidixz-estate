@@ -39,12 +39,12 @@ The supplied files are PNG. A raster logo cannot be sharpened or recoloured safe
 | Item | Status |
 | --- | --- |
 | SVG wordmark + emblem, light and dark | ⬜ **Not supplied** — optional |
-| Favicon set derived from the real mark | ✅ Browser/app icons now use the exact symbol cropped from the supplied parent-logo PNG; optional vector logo can replace the raster crop later |
+| Favicon set derived from the real mark | ✅ Browser/app icons now use the founder-provided transparent symbol PNG; optional vector logo can replace the raster crop later |
 | Social card using the real mark | ⬜ Still the generated placeholder |
 
 When vector art arrives, drop it in as `public/brand/obsidixz-logo-on-light.svg` and
 `-on-dark.svg` and change the two `src` values in `LogoLockup.tsx`. Nothing else needs to change.
-The favicon generator now crops the real symbol directly from the supplied parent-logo raster without redrawing it. An optional vector logo would let a future favicon use vector source artwork; the current icon remains faithful to the supplied pixels.
+The favicon generator trims only transparent padding from the founder-provided `LOGO 3 transparent.png` asset and proportionally downsizes it. An optional vector logo could replace the raster source later; the current icon preserves the supplied pixels and transparency.
 
 **Do not** upscale, recolour or redraw the PNGs to fill those gaps. A placeholder that is honest
 about being a placeholder is better than a degraded copy of an approved mark.
