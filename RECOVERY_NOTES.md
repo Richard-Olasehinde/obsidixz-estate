@@ -99,9 +99,13 @@ foundation in place, five committed verification gates.
 | Copy-feedback branches | `npm run copy-feedback` | ✅ 6/6 |
 | Performance budgets | `npm run perf` | ✅ 28/28 |
 
-Open blockers: **BLK-01** — incoming email has never been confirmed to reach
-`obsidixz.realestate@outlook.com`, nor a reply to leave it. This is a four-step human check with no
-configuration involved (see `DEPLOYMENT.md` §5.1). Also the legal review items LR-01…LR-09. All are
+**All three original blockers are closed.** BLK-01 closed 2026-11-06 on the founder's confirmation
+that incoming mail reaches `obsidixz.realestate@outlook.com` and replies reach the sender.
+
+Remaining work is the legal review items LR-02/03/05/06/07/09 — governing law, jurisdiction, the
+applicable data-protection framework, statutory response period, hosting disclosure (blocked on the
+hosting decision) and adviser review of the liability wording. **None can be resolved by writing
+code or documentation**; they need the founder and, for three of them, a qualified adviser. All are
 listed in `DEVELOPMENT_STATUS.md`.
 
 **Closed 2026-11-06:** BLK-02 (business email confirmed as `obsidixz.realestate@outlook.com`) and

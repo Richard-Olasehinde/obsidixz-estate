@@ -442,7 +442,8 @@ Copy this into an issue and tick it off.
       asserted by `npm run smoke`; visible address and copy fallback verified by `npm run a11y`
       and `npm run copy-feedback`.
 - [ ] **Incoming email reaches the Outlook mailbox, and replies leave it.** Human check, four
-      steps, in §5.1. **BLK-01** — do not describe email delivery as verified until this is ticked.
+      steps, in §5.1. ✅ **Closed 2026-11-06 on the founder's confirmation.** Re-run this check
+      after any change to the mailbox or its provider.
 - [x] **Business email supplied** — `obsidixz.realestate@outlook.com`. **BLK-02**
 - [ ] **Legal pages reviewed** and all nine `to be confirmed` markers resolved by the founder
       and, where appropriate, a qualified adviser. **LR-01 … LR-09**

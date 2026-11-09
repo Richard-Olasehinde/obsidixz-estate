@@ -6,8 +6,9 @@
 **Final commit:** see `git log` — the direct-email round is the latest
 **Date:** 2026-11-06
 **Status:** All eight stages complete, plus direct-email contact and the parent-logo lockup.
-**The site is fully static and complete.** Two of three blockers are closed; BLK-01 is open and is
-a four-step human check on the mailbox, not a development task — see §6.
+**The site is fully static and complete. All three blockers are closed** — BLK-01 closed
+2026-11-06 on the founder's confirmation that both email directions work. See §6 for what that
+closure rests on.
 
 ---
 
@@ -191,7 +192,8 @@ A `resend` delivery mode was added inside the existing adapter at the time. It w
 activated**: Resend refused to verify any `pp.ua` hostname. The form, the API route and the entire
 delivery adapter have since been removed. See §5c.
 
-**BLK-01 remains open**, for a different reason now — see §5c and §6.
+*(Historical: BLK-01 was open at the time this section was written. It was closed on 2026-11-06
+— see §6.)*
 
 ---
 
@@ -203,7 +205,7 @@ delivery adapter have since been removed. See §5c.
 
 | ID | Item | Where it shows | What closes it |
 | --- | --- | --- | --- |
-| BLK-01 | Incoming/reply email not yet confirmed by hand | `/contact` | Email `obsidixz.realestate@outlook.com` from an unrelated account, confirm arrival including junk, reply from the Outlook account, confirm the reply arrives — `DEPLOYMENT.md` §5.1. No configuration involved |
+| ~~BLK-01~~ | ✅ **Closed 2026-11-06** — founder confirmed incoming mail arrives and replies reach the sender | `/contact` | — |
 | ~~BLK-02~~ | ✅ **Closed** — email confirmed and published | — | — |
 | ~~BLK-03~~ | ✅ **Closed** — logo supplied and integrated | — | Optional: vector (SVG) art for the favicon and social card |
 
@@ -248,7 +250,7 @@ delivery adapter have since been removed. See §5c.
 | Lighthouse / Core Web Vitals field data | Needs a browser and a deployed origin. |
 | Screen-reader pass | Structure and ARIA verified statically only. |
 | Cross-browser behaviour | Only the served production HTML, CSS and JS were inspected. |
-| One real end-to-end enquiry | Requires the founder's destination (BLK-01). |
+| ~~One real end-to-end enquiry~~ | ✅ Founder-confirmed, 2026-11-06. |
 
 Layout correctness is proved by font metrics instead: `check-layout-metrics.mjs` reads the real
 Montserrat and Open Sans advance widths and asserts the widest word in every multi-column cell
@@ -264,7 +266,7 @@ behaviour. Those stay on the founder's list and are recorded as unverified rathe
    This is the single change that turns the site from built to usable. See `ENVIRONMENT_SETUP.md` §5.
 2. **Send one real enquiry** through the live form and find it in `obsidixz.realestate@outlook.com`.
    Until that has happened, the form has never proven itself against a real destination — and
-   BLK-01 stays open.
+   BLK-01 is closed on founder confirmation.
 3. **Complete the legal review** — LR-01 to LR-09. Nothing should be published while the gold
    "to be confirmed" panels remain.
 

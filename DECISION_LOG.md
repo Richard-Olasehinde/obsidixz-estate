@@ -879,3 +879,28 @@ Without `NEXT_PUBLIC_BASE_PATH`, the HTML returns 200 while every asset URL reso
 high and 404s — the page loads unstyled, which reads as "deployment broken" rather than "base path
 missing". The workflow fails the run in that case, and was tested against both outcomes. It also
 writes `.nojekyll`, without which Jekyll skips `/_next/` entirely.
+
+### D71. BLK-01 is closed on a first-party confirmation, and recorded as such
+
+**Decision:** BLK-01 is closed. The founder confirmed on 2026-11-06 that incoming mail reaches
+`obsidixz.realestate@outlook.com` and that replies reach the original sender.
+
+**Basis, stated precisely:** this is a **first-party report, not a witnessed artefact**. No message
+copy, header, folder name or bounce text was supplied. The documentation says so explicitly rather
+than recording "verified" as though an observation existed on file.
+
+**Why that is still a legitimate closure:** the person who operates and reads the mailbox is the
+correct authority on whether it works. Nothing in this environment can send or receive mail, so
+demanding an artefact I cannot obtain would block a check that has, in fact, passed.
+
+**What is still owed, and is not a blocker:** one recorded observation — which folder the first
+message landed in. That would convert a report into a documented result. It changes nothing about
+whether the site works.
+
+**What this does not establish:** nothing about the site's own behaviour was re-tested by this
+closure. The website-side checks (mailto recipient and subject, selectable address, copy fallback)
+were verified separately and remain green. The two things are distinct and were always described
+as distinct.
+
+**Standing instruction retained:** if the mailbox provider, the address, or the receiving account
+changes, this closure is void and the check must be re-run before the site is described as working.

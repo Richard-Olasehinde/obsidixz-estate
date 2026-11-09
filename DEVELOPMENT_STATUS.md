@@ -562,7 +562,7 @@ Executed against the real adapter with a local mock endpoint, using the dev-only
 | A message actually arriving in `obsidixz.realestate@outlook.com` | Requires all of the above |
 | Real-browser rendering of the new logo | Still no browser engine in this environment |
 
-**BLK-01 therefore remains open.** A `200` from Resend means Resend accepted the message; it does
+*(Historical — this described the state before the form was removed. BLK-01 was subsequently closed on 2026-11-06 — see the register above.)* Resend's `200` meant only that Resend accepted the message; it did
 not prove arrival. Closing it requires a human to see the email.
 
 ---
@@ -574,7 +574,7 @@ Classification follows the brief: **A** development blocker, **B** configuration
 
 | ID | Class | Item | Needed by | Owner |
 | --- | --- | --- | --- | --- |
-| BLK-01 | **B** | Incoming email has never been confirmed to reach `obsidixz.realestate@outlook.com`, nor a reply to leave it. The website side is built and verified; this is a four-step human check | Launch | Founder |
+| ~~BLK-01~~ | ✅ | **Closed 2026-11-06 on the founder's confirmation.** See *Email verification* below for exactly what that does and does not establish, and what is still owed | — | — |
 | ~~BLK-02~~ | ✅ | **Closed 2026-11-06** — `obsidixz.realestate@outlook.com` confirmed and published | — | — |
 | ~~BLK-03~~ | ✅ | **Closed 2026-11-06** — transparent logo pair supplied and integrated | — | — |
 | BLK-04 | **D** | Legal entity name, registration number, registered address | Legal page review | Founder + adviser |
@@ -591,7 +591,7 @@ Full detail, including exactly what to supply and where it appears, is in
 
 | ID | Blocker | Where it appears | What closes it |
 | --- | --- | --- | --- |
-| BLK-01 | Incoming/reply email not yet confirmed by hand | `/contact` | Send one message from an unrelated account to `obsidixz.realestate@outlook.com`, confirm arrival (including junk), reply from that Outlook account, confirm the reply arrives. See DEPLOYMENT.md §5.1 |
+| ~~BLK-01~~ | ✅ Closed on founder confirmation, 2026-11-06 | `/contact` | — |
 | ~~BLK-02~~ | ✅ Closed — email confirmed and published | — | — |
 | ~~BLK-03~~ | ✅ Closed — logo supplied and integrated | — | Favicon and OG card still use the generated placeholder until a vector mark is supplied |
 
@@ -628,11 +628,9 @@ panel with a plain-language explanation. None has been filled with a plausible-l
 
 All eight implementation stages are complete. What remains is not development:
 
-1. **Close BLK-01** — send a message from an unrelated email account to
-   `obsidixz.realestate@outlook.com`, confirm it arrives (checking junk), reply to it from that
-   Outlook account, and confirm the reply reaches the sender. No configuration is involved; this
-   is purely a check that the mailbox works.
-   [DEPLOYMENT.md §5.1](./DEPLOYMENT.md#51-post-deploy-verification).
+1. ~~Close BLK-01~~ — **done.** Closed on the founder's confirmation. No artefact of the test
+   (headers, message copy, folder, bounce) was supplied, so the closure rests on that
+   confirmation alone — see the note under *Email verification* below.
 2. ~~Close BLK-02~~ — **done.** Email confirmed and published.
 3. ~~Close BLK-03~~ — **done.** Logo supplied and integrated. Optional: supply vector (SVG) art
    to replace the generated favicon and social card.
@@ -700,11 +698,21 @@ first has been verified.
 
 | Check | Result |
 | --- | --- |
-| A message sent to `obsidixz.realestate@outlook.com` arrives | ⬜ **Not tested** |
-| A reply sent from that Outlook account reaches the sender | ⬜ **Not tested** |
+| A message sent to `obsidixz.realestate@outlook.com` arrives | ✅ **Founder-confirmed working, 2026-11-06** |
+| A reply sent from that Outlook account reaches the sender | ✅ **Founder-confirmed working, 2026-11-06** |
 
-Neither can be established from this environment, and neither is implied by anything in table A.
-Opening a `mailto:` draft is not evidence of delivery. **BLK-01 remains open.**
+**What this closure rests on.** The founder reports both directions working. No message copy,
+header, folder name or bounce text was supplied, so this is a **first-party report rather than a
+witnessed result**. That is a normal and acceptable basis for closing an operational check — the
+person operating the mailbox is the right authority on whether it works — but the distinction is
+recorded here so nobody later reads "verified" and assumes an artefact exists.
+
+**What is still owed, and it is not a blocker:** a record of the observed result. Adding one
+sentence — which folder the first message landed in, and when — would convert this from a report
+into a documented observation. Useful, not required.
+
+Neither direction can be established from this environment, and neither is implied by the other.
+Opening a `mailto:` draft is not evidence of delivery.
 
 ### Checks run for this change
 
