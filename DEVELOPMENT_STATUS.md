@@ -855,3 +855,37 @@ cannot set response headers at all. The absence is real and worth seeing every r
 The export was served over plain HTTP and checked directly: `/`, `/contact/`, `/services/`,
 `/about/`, `/privacy-policy/`, `/manifest.webmanifest`, `/robots.txt`, `/sitemap.xml` and the CSS
 bundle all return 200.
+
+
+---
+
+## Post-Stage-8: CI checks run against the actual static artifact
+
+The red GitHub Actions runs were failing before the static export build. The Pages workflow called
+`npm run check`, whose `a11y` step fetches routes from a running server; Actions had no server yet,
+so it failed with `TypeError: fetch failed` and never reached `next build` or certificate setup.
+
+### Fix
+
+- Added `npm run check:offline`: typecheck, lint, layout, copy-feedback. None needs a server.
+- Pages CI runs that offline group, then builds with `NEXT_OUTPUT_EXPORT=1`.
+- It starts Python's built-in static server on the generated `out/` and runs both `a11y` and `smoke`
+  against that exact output before uploading.
+- No new runtime or CI dependency: `python3 -m http.server` is already on `ubuntu-latest`.
+
+### Reproduction
+
+Ran the workflow steps locally, in order:
+
+| Step | Result |
+| --- | --- |
+| `npm run check:offline` | ✅ exit 0; layout 35/35, copy feedback pass |
+| `NEXT_OUTPUT_EXPORT=1 ... npm run build` | ✅ exit 0; `out/index.html` created |
+| Serve `out/` then `npm run a11y` | ✅ all checks passed |
+| Serve `out/` then `npm run smoke` | ✅ 138/138 |
+| Base-path guard | ✅ no repo prefix; root-absolute assets |
+| Add deployment files | ✅ `.nojekyll` and `CNAME=realestate.obsidixz.pp.ua` |
+
+The earlier claim that `a11y` exited zero with no server was incorrect: the test had read `tail`'s
+exit code through a pipeline, not the script's. A direct invocation returns 1 as expected. The
+workflow fix above is independently reproduced and verified.
