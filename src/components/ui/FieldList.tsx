@@ -1,7 +1,7 @@
 import { Diamond } from './Motifs';
 
 type FieldListProps = {
-  items: { label: string; description?: string; caveat?: string }[];
+  items: readonly { label: string; description?: string; caveat?: string }[];
   tone?: 'light' | 'dark';
   /** Two columns on wide screens. */
   columns?: 1 | 2;

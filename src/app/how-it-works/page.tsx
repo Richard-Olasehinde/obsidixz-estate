@@ -81,7 +81,7 @@ export default function HowItWorksPage() {
             />
             <div className="mt-8">
               <ButtonLink href="/contact" variant="primary" withArrow>
-                Start an enquiry
+                Discuss Your Requirements
               </ButtonLink>
             </div>
           </div>
