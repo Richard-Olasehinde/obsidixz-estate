@@ -106,18 +106,18 @@ export const serviceScope = [
 export const processSteps = [
   {
     step: '01',
-    title: 'Submit your requirements',
-    summary: 'Send your target location and the criteria a property needs to meet.',
+    title: 'Discuss the brief by email',
+    summary: 'Share a target US area, property profile and the conditions you are exploring.',
     detail:
-      'You share the market you are looking at, the property type and size you want, and any signals that matter for your strategy. A short written brief sent by email is enough to start.',
+      'A short email can describe an agreed city or county, property type, size range and other conditions you would like researched. These are examples of possible brief details, not a client request or a promise every condition can be supported.',
     icon: 'document' as const,
   },
   {
     step: '02',
     title: 'Review and scope',
-    summary: 'We confirm what is needed, what the sources can realistically support, and agree the scope.',
+    summary: 'We agree the scope and what the available records can support.',
     detail:
-      'Before research begins we check that your criteria are answerable from available records, agree the fields you want, the format of the deliverable and the geography being covered. If something you have asked for cannot be supported, we say so at this stage rather than after delivery.',
+      'Before research begins we confirm the geography, fields, output format and volume. We also identify any condition the available records cannot reliably support and agree timing and any fee in writing.',
     icon: 'scope' as const,
   },
   {
@@ -146,26 +146,6 @@ export const processSteps = [
   },
 ];
 
-/** Primary audience: US residential real-estate investors. */
-export const investorScenarios = [
-  {
-    title: 'Building a working list',
-    body: 'You know the market and the property profile you want, and you need a list of relevant prospects to work through rather than a search that starts from nothing each week.',
-  },
-  {
-    title: 'Testing a new market',
-    body: 'You are considering a county or metro you have not worked in and want to understand what is actually there before committing time or budget to it.',
-  },
-  {
-    title: 'Working criteria that are hard to filter for',
-    body: 'Your criteria combine several conditions — property type, ownership pattern, age or recorded characteristics — that no single public search handles well.',
-  },
-  {
-    title: 'Extending limited sourcing capacity',
-    body: 'You are a small operator doing your own research and want the initial research done thoroughly so your time goes into evaluation and outreach.',
-  },
-];
-
 /** Secondary audience: property acquisition operators. */
 export const operatorScenarios = [
   {
@@ -182,66 +162,70 @@ export const operatorScenarios = [
   },
 ];
 
-/** How the business approaches research quality. */
-export const approachPrinciples = [
-  {
-    title: 'Manual research, deliberately',
-    body: 'Prospects are researched by hand against your criteria. Automation is used to support internal workflow where it genuinely helps, but it is not presented as a product and it does not replace the review step.',
-  },
-  {
-    title: 'Sources recorded against every field',
-    body: 'Each detail can be traced back to the source it came from. If a source cannot be cited, the detail is not presented as confirmed.',
-  },
-  {
-    title: 'Gaps stated, not smoothed over',
-    body: 'Missing, inconsistent or unconfirmed information is recorded in verification notes. A shorter, accurate deliverable is more useful to you than a complete-looking one that is wrong.',
-  },
-  {
-    title: 'Lawful and appropriate use of information',
-    body: 'We work from public records and lawfully accessible sources, respect the terms of those sources, and do not scrape websites or handle personal information in ways that breach applicable law or data-use restrictions.',
-  },
-  {
-    title: 'Criteria agreed before work starts',
-    body: 'Scope is confirmed up front, including any part of your brief the available records cannot support. You know what you are getting before the research begins.',
-  },
-  {
-    title: 'Clear, direct communication',
-    body: 'One point of contact, plain language, and a direct answer if something cannot be done or is outside the scope of the service.',
-  },
-] as const;
-
-/** The research challenge, framed as market reality — no claims about our scale. */
+/** Distinct market problems the service addresses; kept brief on the homepage. */
 export const researchChallenges = [
   {
-    title: 'Records are scattered by design',
-    body: 'Ownership sits with the county, tax figures with the assessor, permits with the municipality and sale history somewhere else again. Each source has its own format, its own update cadence and its own gaps.',
+    title: 'Records sit in different places',
+    body: 'Parcel, assessment, permit and sale information may be held by separate county or municipal sources, each with its own format and update cycle.',
   },
   {
-    title: 'Search filters only answer easy questions',
-    body: 'Listing portals are built to show what is listed, not what you are looking for. Criteria that combine ownership patterns, property age and recorded characteristics rarely fit a filter panel.',
+    title: 'A brief can combine several conditions',
+    body: 'Property type, size range and other recorded characteristics do not always fit one search filter. The brief determines which sources to review.',
   },
   {
-    title: 'The checking is the slow part',
-    body: 'Finding a possible prospect is quick. Confirming the parcel, the recorded owner, the size and whether the details agree across sources is what consumes the hours.',
-  },
-  {
-    title: 'Unverified lists cost more than they save',
-    body: 'A list that looks complete but contains stale ownership or mismatched parcels wastes outreach time and damages the credibility of the person making contact.',
+    title: 'Details need to line up',
+    body: 'A possible match still needs its parcel and recorded details checked across the sources available for that area.',
   },
 ] as const;
 
-/** Short statements used in the homepage introduction. */
-export const homeIntroPoints = [
+/** Illustrative information a customer may include in a brief. */
+export const homeBriefInputs = [
   {
-    label: 'What we do',
-    body: 'Criteria-based property prospect research and lead generation for US residential real estate.',
+    label: 'Target area',
+    body: 'An agreed US city or county; coverage is selected for each brief.',
   },
   {
-    label: 'Who it is for',
-    body: 'Small residential investors and acquisition operators working their own sourcing.',
+    label: 'Property type',
+    body: 'For example, single-family or small multi-unit residential property.',
   },
   {
-    label: 'How it is done',
-    body: 'Manually researched against your brief, with sources recorded and gaps stated.',
+    label: 'Property profile',
+    body: 'A size range or other recorded characteristics relevant to your search.',
+  },
+  {
+    label: 'Other conditions',
+    body: 'Customer-defined requirements that available records may be able to support.',
+  },
+  {
+    label: 'Your output',
+    body: 'The information you need and whether a spreadsheet or report would suit you.',
+  },
+] as const;
+
+/** Homepage summary of the existing service deliverable, not an example property row. */
+export const homeDeliverableGroups = [
+  {
+    label: 'Property identity and characteristics',
+    description: 'Location, property type and relevant recorded characteristics where available.',
+  },
+  {
+    label: 'Relevant recorded information',
+    description: 'Public property details that bear on the agreed criteria and can be sourced.',
+  },
+  {
+    label: 'Sources and research date',
+    description: 'References for information reviewed and the date the research was carried out.',
+  },
+  {
+    label: 'Why it matches',
+    description: 'A short note connecting the recorded details to the conditions in your brief.',
+  },
+  {
+    label: 'Missing or conflicting details',
+    description: 'Unconfirmed, inconsistent or unavailable information is identified, not guessed.',
+  },
+  {
+    label: 'Owner or contact details, if appropriate',
+    description: 'Included only when appropriate and lawfully available or obtained—not assumed for every property.',
   },
 ] as const;
